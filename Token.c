@@ -90,14 +90,18 @@ void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine)
 * This function returns the token in the storage that is stored immediately before the current token (if exsits).
 */
 Token *back_token() {  
-	if(currentIndex == 0)
+	if(currentIndex == 0) 
 	{
-		if (currentNode->prev == NULL) {
-			printf("Hatul Hatul Hatul Hatul Hatul Hatul !!!! .\n"); // TODO: change error messege to something usefull.
-			// TODO: check if abortion is needed.
+		// Previous node is needed.
+		if (currentNode->prev == NULL) 
+		{
+			// Previous node is not exist (the program is on the first node which created).
+			printf("There is no previous node in the memory.\n");
+			return NULL;
 		}
 		else
 		{
+			// Retrieving previous node.
 			currentNode = currentNode->prev;
 			currentIndex = 99;
 			return &(currentNode->tokensArray)[currentIndex];
@@ -105,6 +109,8 @@ Token *back_token() {
 	}
 	else
 	{
+		// Previous node is not needed.
+		// Update currentIndex only and return.
 		currentIndex--;
 		return &(currentNode->tokensArray)[currentIndex];
 	}
@@ -117,18 +123,20 @@ Token *back_token() {
 * Else: continues to read the input file in order to identify, create and store a new token (using yylex function);
 *  returns the token that was created.
 */
-Token* next_token() // TODO: check whole implementation.
+Token* next_token() 
 {
 	if (currentIndex == 99)
 	{
+		// Next node is needed.
 		if (currentNode->next == NULL)
 		{
-
-			printf("Hatul Hatul Hatul Hatul Hatul Hatul !!!! .\n"); // TODO: change error messege to something usefull.
-			// TODO: quit in style. or maybe return null.
+			// The program is currently on the last token that stores in the memory.
+			printf("No further tokens in the memory, The program is currently on the last one.\n");
+			return NULL;
 		}
 		else
 		{
+			// Retrieving next node.
 			currentNode = currentNode->next;
 			currentIndex = 0;
 			return &(currentNode->tokensArray)[currentIndex];
@@ -136,11 +144,13 @@ Token* next_token() // TODO: check whole implementation.
 	}
 	else
 	{
+		// Next node is not needed.
 		currentIndex++;
 		if (&currentNode->tokensArray[currentIndex] == NULL)
 		{
-			printf("Hatul Hatul Hatul Hatul Hatul Hatul !!!! .\n"); // TODO: change error messege to something usefull.
-			// TODO: quit in style. or maybe return null.
+			// The program is currently on the last token that stores in the memory.
+			printf("No further tokens in the memory, The program is currently on the last one.\n");
+			return NULL;
 		}
 		else
 			return &(currentNode->tokensArray)[currentIndex];
