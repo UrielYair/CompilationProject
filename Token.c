@@ -1,4 +1,5 @@
 #include "Token.h"
+#include <stdbool.h>
 
 /* This package describes the storage of tokens identified in the input text.
 * The storage is a bi-directional list of nodes.
@@ -158,41 +159,43 @@ Token* next_token()
 
 }
 
-int match(eTOKENS expectedToken) //TODO: check how to use bool.
+bool match(eTOKENS expectedToken) 
 {
-
 	Token* currentToken = next_token();
 
-	// TODO: fix messeges.
 	if (expectedToken != currentToken->kind)
 	{
-		printf("Hatul Hatul Hatul Hatul Hatul Hatul !!!! .\n");
-		return 0;  // false
+		printf("Expected token: %s at line %u,\nActual token : %s, lexeme %s.\n" ,
+			tokenToString(expectedToken), currentToken->lineNumber, tokenToString(currentToken->kind), currentToken->lexeme);
+		return false;
 	}
-	else
-	{
-		printf("Hatul Hatul Hatul Hatul Hatul Hatul !!!! .\n");
-		return 1;  // true
-	}
+	return true;
 }
 
-Token* peekN(Token* current, int numberOfNext)
+Token* peekN(Token* current, int numberOfNexts)
 {
-	for (int i = 0; i < numberOfNext; i++)
-	{
-		next_token();
-	}
+	int successfulNexts = 0;
+	Token* returnToken = NULL;
 
-	Token* returnToken = &currentNode->tokensArray[currentIndex];
+	for (int i = 0; i < numberOfNexts; i++)
+	{
+		if (NULL != next_token())
+			successfulNexts++;
+	}
 	
-	for (int i = 0; i < numberOfNext; i++)
+	if (successfulNexts == numberOfNexts)
+	{
+		// if none of the next_token() calls returns null, it will be fine to save the "peeked" token.
+		// if not - it means that next_token() got out of bounds.
+		returnToken = &currentNode->tokensArray[currentIndex];
+	}
+	
+	for (int i = 0; i < numberOfNexts; i++)
 	{
 		back_token();
 	}
 	return returnToken;
 }
-
-
 
 const char* tokenToString(enum eTOKENS kind)
 {
