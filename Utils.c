@@ -15,9 +15,11 @@ void printInvalidTokenToConsole(char* lexeme, int numOfLine)
 	printf("The character %c at line : %u does not begin any legal token in the language.\n", *lexeme, numOfLine);
 }
 
-int lexCheck(char* inputFile, char* outputFile)
+int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName)
 {
-	// Openin files for input and output:
+	int lineNumber = 1;
+
+	// Openin files for input: 
 	yyin = fopen(inputFile, "r");
 	
 	// I/O Validation:
@@ -26,20 +28,37 @@ int lexCheck(char* inputFile, char* outputFile)
 		return 1;
 	}
 
-	yyout = fopen(outputFile, "w");
+	// Openin files for lexical output:
+	yyout = fopen(lexicalOutputFileName, "w");
 
 	if (yyout == NULL) {
-		printf("Error! creating output file failed.\n");
+		printf("Error! creating output file for lexical analyzing failed.\n");
 		fclose(yyin);
 		return 1;
 	}
 	
-	// Lexical check:
-	yylex();
+	// Openin files for syntactic output:
+	FILE *syntacticOutput = fopen(syntacticOutputFileName, "w");
+		
+	if (syntacticOutput == NULL) {
+		printf("Error! creating output file for syntactical analyzing failed.\n");
+		fclose(yyin);
+		fclose(yyout);
+		return 1;
+	}
+
+	// Parseing input file:
+	parse_PROGRAM(syntacticOutput);
+	match(TOKEN_END_OF_FILE);
+
+	//free nodes and memory:
+	// **** free free free ****
+	// TODO: implement free memory method.
 
 	// Files closing:
 	fclose(yyin);
 	fclose(yyout);
+	fclose(syntacticOutput);
 	return 0;
 }
 

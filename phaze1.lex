@@ -56,40 +56,16 @@ WHITE			[ \t]
 
 %%
 
+
+
 int main(int argc, char** argv) 
 {
 
-	int lineNumber=1;
-	lexCheck("C:\\temp\\test1.txt", 
-			 "c:\\temp\\test1_203605654_302846621_lex.txt");
 	
-	// method to get first node and assign it to *currentNode.
-	// int currentIndex = 0;
+	parseInputFile("C:\\temp\\test1.txt", 
+			 "c:\\temp\\test1_203605654_313583205_lex.txt",
+			 "c:\\temp\\test1_203605654_313583205_syntactic.txt");
 	
-	// parse_PROGRAM();
-	// match(TOKEN_END_OF_FILE);
-	//
-
-	//test1
-	//free nodes 
 
 
-
-	//=======================================================
-
-	
-	lineNumber=1;
-	lexCheck("C:\\temp\\test2.txt", 
-			 "c:\\temp\\test2_203605654_302846621_lex.txt");
-
-
-	// parse_PROGRAM();
-	// match(TOKEN_END_OF_FILE);
-	//
-
-	// method to get first node and assign it to *currentNode.
-	// int currentIndex = 0;
-
-	//test 2
-	//free nodes 
 }

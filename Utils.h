@@ -6,7 +6,7 @@
 int yywrap();
 void printValidTokenToOutputFile(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
 void printInvalidTokenToConsole(char* lexeme, int numOfLine);
-int lexCheck(char* inputFile, char* outputFile);
-void makeCurrentNodeToTheFirstNodeAndCurrentIndexToZero();
+int parseInputFile(char* inputFile, char* outputFile);
+
 
 #endif
