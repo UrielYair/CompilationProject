@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 extern FILE *yyin, *yyout;
 
@@ -39,7 +40,7 @@ typedef enum eTOKENS
 	/* Arithmetics: */
 		TOKEN_ARITHMETIC_MULTIPLICATION,
 		TOKEN_ARITHMETIC_DIVISION,
-		TOKEN_OP_EQUAL,
+		TOKEN_ARITHMETIC_ASSIGNMENT,
 
 	/* Numbers: */
 		TOKEN_INT_NUMBER,
@@ -74,8 +75,8 @@ void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine);
 Token *next_token();
 Token *back_token();
 
-int match(Token* expectedToken);
+bool match(eTOKENS expectedToken);
 const char* tokenToString(enum eTOKENS kind);
-void handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
+eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
 
 #endif

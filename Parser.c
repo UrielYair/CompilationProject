@@ -239,14 +239,14 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 
 	case TOKEN_SEMICOLON:
 	case TOKEN_COMMA:
-	case TOKEN_OP_EQUAL:
+	case TOKEN_ARITHMETIC_ASSIGNMENT:
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> ε)\n");
 		back_token();
 		break;
 
 		while (
-			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS && t->kind != TOKEN_COMMA && t->kind != TOKEN_OP_EQUAL
+			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS && t->kind != TOKEN_COMMA && t->kind != TOKEN_ARITHMETIC_ASSIGNMENT
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
@@ -516,10 +516,10 @@ void parse_STATEMENT_SUFFIX(FILE* outputFile)
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
-	case TOKEN_OP_EQUAL:
+	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
 		parse_VARIABLE_SUFFIX(outputFile);
-		match(TOKEN_OP_EQUAL);
+		match(TOKEN_ARITHMETIC_ASSIGNMENT);
 		parse_EXPRESSION(outputFile);
 		break;
 
@@ -640,10 +640,10 @@ void parse_EXPRESSION(FILE* outputFile)
 		
 		tokenToCheck = peekN(t, 1); // looking to check what is the kind of the next token to decise how to act next.
 		
-		if (tokenToCheck->kind == TOKEN_OP_EQUAL)
+		if (tokenToCheck->kind == TOKEN_ARITHMETIC_ASSIGNMENT)
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
-			match(TOKEN_OP_EQUAL);
+			match(TOKEN_ARITHMETIC_ASSIGNMENT);
 			parse_EXPRESSION(outputFile);
 		}
 		else

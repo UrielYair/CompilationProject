@@ -3,57 +3,53 @@
 #include "Token.h"
 %}
 
-DIGIT			[0-9]
-ALPHA			[a-zA-Z]
-NATURAL_NUMBER	[1-9]{DIGIT}*
-ID				{ALPHA}("_"?{ALPHA}|{DIGIT})*
+DIGIT		[0-9]
+NONZERO		[1-9]
+ALPHA		[a-zA-Z]
+ALPHANUM	[a-zA-Z0-9]
+
+ID				{ALPHA}("_"?{ALPHANUM})*
+NUMBER_INT		({NONZERO}{DIGIT}*|0)
+NUMBER_REAL	    ({NONZERO}{DIGIT}*|0)"."{DIGIT}+
+COMMENT			"--".*
+ENDLN			[\n]
+WHITE			[ \t]
 
 
 %%
 
---.*												{}
-\n													lineNumber++;
-<<EOF>>												{handleValidToken(yyout, TOKEN_END_OF_FILE,				yytext, lineNumber);
-													return 0;}
+"program"											{return handleValidToken(yyout, TOKEN_KW_PROGRAM,				yytext, lineNumber);}
+"end"												{return handleValidToken(yyout, TOKEN_KW_END,					yytext, lineNumber);}
+"real"												{return handleValidToken(yyout, TOKEN_KW_REAL,					yytext, lineNumber);}
+"integer"											{return handleValidToken(yyout, TOKEN_KW_INTEGER,				yytext, lineNumber);}
+"void"												{return handleValidToken(yyout, TOKEN_KW_VOID,					yytext, lineNumber);}
+"return"											{return handleValidToken(yyout, TOKEN_KW_RETURN,				yytext, lineNumber);}
 
-(" ")+												{}
+"/"													{return handleValidToken(yyout, TOKEN_ARITHMETIC_DIVISION,		yytext, lineNumber);}
+"*"													{return handleValidToken(yyout, TOKEN_ARITHMETIC_MULTIPLICATION,yytext, lineNumber);}
+"="													{return handleValidToken(yyout, TOKEN_ARITHMETIC_ASSIGNMENT,	yytext, lineNumber);}
 
-"/"													handleValidToken(yyout, TOKEN_ARITHMETIC_DIVISION,		yytext, lineNumber);
-"*"													handleValidToken(yyout, TOKEN_ARITHMETIC_MULTIPLICATION,yytext, lineNumber);
-"="													handleValidToken(yyout, TOKEN_OP_EQUAL,					yytext, lineNumber);
+";"													{return handleValidToken(yyout, TOKEN_SEMICOLON,				yytext, lineNumber);}
+","													{return handleValidToken(yyout, TOKEN_COMMA,					yytext, lineNumber);}
 
-","													handleValidToken(yyout, TOKEN_COMMA,					yytext, lineNumber);
-";"													handleValidToken(yyout, TOKEN_SEMICOLON,				yytext, lineNumber);
+"{"													{return handleValidToken(yyout, TOKEN_OPEN_CURLY_BRACKETS,		yytext, lineNumber);}
+"}"													{return handleValidToken(yyout, TOKEN_CLOSE_CURLY_BRACKETS,		yytext, lineNumber);}
 
-"{"													handleValidToken(yyout, TOKEN_OPEN_CURLY_BRACKETS,		yytext, lineNumber);
-"}"													handleValidToken(yyout, TOKEN_CLOSE_CURLY_BRACKETS,		yytext, lineNumber);
+"["													{return handleValidToken(yyout, TOKEN_OPEN_SQUARE_BRACKETS,		yytext, lineNumber);}
+"]"													{return handleValidToken(yyout, TOKEN_CLOSE_SQUARE_BRACKETS,	yytext, lineNumber);}
 
-"["													handleValidToken(yyout, TOKEN_OPEN_SQUARE_BRACKETS,		yytext, lineNumber);
-"]"													handleValidToken(yyout, TOKEN_CLOSE_SQUARE_BRACKETS,	yytext, lineNumber);
-
-"("													handleValidToken(yyout, TOKEN_OPEN_ROUND_BRACKETS,		yytext, lineNumber);
-")"													handleValidToken(yyout, TOKEN_CLOSE_ROUND_BRACKETS,		yytext, lineNumber);
-
-
-"program"											handleValidToken(yyout, TOKEN_KW_PROGRAM,				yytext, lineNumber);
-"end"												handleValidToken(yyout, TOKEN_KW_END,					yytext, lineNumber);
-"void"												handleValidToken(yyout, TOKEN_KW_VOID,					yytext, lineNumber);
-"return"											handleValidToken(yyout, TOKEN_KW_RETURN,				yytext, lineNumber);
-"integer"											handleValidToken(yyout, TOKEN_KW_INTEGER,				yytext, lineNumber);
-"real"												handleValidToken(yyout, TOKEN_KW_REAL,					yytext, lineNumber);
+"("													{return handleValidToken(yyout, TOKEN_OPEN_ROUND_BRACKETS,		yytext, lineNumber);}
+")"													{return handleValidToken(yyout, TOKEN_CLOSE_ROUND_BRACKETS,		yytext, lineNumber);}
 
 
-0|{NATURAL_NUMBER}									handleValidToken(yyout, TOKEN_INT_NUMBER,				yytext, lineNumber);
-0"."{DIGIT}+|{NATURAL_NUMBER}"."{DIGIT}+			handleValidToken(yyout, TOKEN_REAL_NUMBER,				yytext, lineNumber);
+{ID}												{return handleValidToken(yyout, TOKEN_ID,						yytext, lineNumber);}
+{NUMBER_INT}										{return handleValidToken(yyout, TOKEN_INT_NUMBER,				yytext, lineNumber);}
+{NUMBER_REAL}										{return handleValidToken(yyout, TOKEN_REAL_NUMBER,				yytext, lineNumber);}
 
-"."{DIGIT}+|"."{NATURAL_NUMBER}"."{DIGIT}+			printInvalidTokenToConsole(yytext, lineNumber);
-0"."|{NATURAL_NUMBER}"."							printInvalidTokenToConsole(yytext, lineNumber);
-
-
-
-" "*[^_]"_"{ID}|{ID}"_"[^_]" "?						printInvalidTokenToConsole(yytext, lineNumber);
-
-{ID}												handleValidToken(yyout, TOKEN_ID,	yytext, lineNumber);
+{ENDLN}												lineNumber++;
+{COMMENT}											{}
+{WHITE}												{}
+<<EOF>>												{return handleValidToken(yyout, TOKEN_END_OF_FILE,				yytext, lineNumber);}
 
 .													printInvalidTokenToConsole(yytext, lineNumber);
 

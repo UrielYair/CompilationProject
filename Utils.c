@@ -43,9 +43,3 @@ int lexCheck(char* inputFile, char* outputFile)
 	return 0;
 }
 
-void makeCurrentNodeToTheFirstNodeAndCurrentIndexToZero() // TODO: consider nicer name.
-{
-	while (currentNode->prev != NULL)
-		currentNode = currentNode->prev;
-	currentIndex = 0;
-}

@@ -219,15 +219,16 @@ const char* tokenToString(enum eTOKENS kind)
 		case TOKEN_CLOSE_ROUND_BRACKETS:	return "TOKEN_CLOSE_ROUND_BRACKETS";
 		case TOKEN_ARITHMETIC_MULTIPLICATION: return "TOKEN_ARITHMETIC_MULTIPLICATION";
 		case TOKEN_ARITHMETIC_DIVISION:		return "TOKEN_ARITHMETIC_DIVISION";
-		case TOKEN_OP_EQUAL:				return "TOKEN_OP_EQUAL";
+		case TOKEN_ARITHMETIC_ASSIGNMENT:	return "TOKEN_ARITHMETIC_ASSIGNMENT";
 		case TOKEN_INT_NUMBER:				return "TOKEN_INT_NUMBER";
 		case TOKEN_REAL_NUMBER:				return "TOKEN_REAL_NUMBER";
 		default:							return "enum not valid.";
 	}
 }
 
-void handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine) 
+eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine) 
 {
 	create_and_store_token(kind, lexeme, numOfLine);
-	printValidTokenToOutputFile(yyout, kind, lexeme, numOfLine);
+	printValidTokenToOutputFile(outputFile, kind, lexeme, numOfLine);
+	return kind;
 }
