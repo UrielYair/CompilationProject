@@ -1,28 +1,27 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-void parse_PROGRAM(FILE*);
-void parse_VAR_DEFINITIONS(FILE*);
-void parse_VAR_DEFINITIONS_SUFFIX(FILE*);
-void parse_VAR_DEFINITION(FILE*);
-void parse_TYPE(FILE*);
-void parse_VARIABLES_LIST(FILE*);
-void parse_VARIABLES_LIST_SUFFIX(FILE*);
-void parse_VARIABLE(FILE*);
-void parse_VARIABLE_SUFFIX(FILE*);
-void parse_FUNC_DEFINITIONS(FILE*);
-void parse_FUNC_DEFINITIONS_SUFFIX(FILE*);
-void parse_FUNC_DEFINITION(FILE*);
-void parse_RETURNED_TYPE(FILE*);
-void parse_PARAM_DEFINITIONS(FILE*);
-void parse_STATEMENTS(FILE*);
-void parse_STATEMENTS_SUFFIX(FILE*);
-void parse_STATEMENT(FILE*);
-void parse_STATEMENT_SUFFIX(FILE*);
-void parse_RETURN_SUFFIX(FILE*);
-void parse_BLOCK(FILE*);
-void parse_PARAMETERS_LIST(FILE*);
-void parse_EXPRESSION(FILE*);
+void parse_PROGRAM(FILE* output);
+void parse_VAR_DEFINITIONS(FILE* output);
+void parse_VAR_DEFINITIONS_SUFFIX(FILE* output);
+void parse_VAR_DEFINITION(FILE* output);
+void parse_TYPE(FILE* output);
+void parse_VARIABLES_LIST(FILE* output);
+void parse_VARIABLES_LIST_SUFFIX(FILE* output);
+void parse_VARIABLE(FILE* output);
+void parse_VARIABLE_SUFFIX(FILE* output);
+void parse_FUNC_DEFINITIONS(FILE* output);
+void parse_FUNC_DEFINITIONS_SUFFIX(FILE* output);
+void parse_FUNC_DEFINITION(FILE* output);
+void parse_RETURNED_TYPE(FILE* output);
+void parse_PARAM_DEFINITIONS(FILE* output);
+void parse_STATEMENTS(FILE* output);
+void parse_STATEMENTS_SUFFIX(FILE* output);
+void parse_STATEMENT(FILE* output);
+void parse_STATEMENT_SUFFIX(FILE* output);
+void parse_RETURN_SUFFIX(FILE* output);
+void parse_BLOCK(FILE* output);
+void parse_PARAMETERS_LIST(FILE* output);
+void parse_EXPRESSION(FILE* output);
 
-
-#endif // !Parser_
+#endif 

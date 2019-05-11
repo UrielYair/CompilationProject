@@ -1,5 +1,5 @@
-﻿#include "Parser.h"
-#include "Token.h"
+﻿#include "Token.h"
+#include "Parser.h"
 
 
 void parse_PROGRAM(FILE* outputFile)
@@ -68,13 +68,13 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 		}
 		else
 		{
-			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->ε)\n");
+			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->EPSILON)\n");
 			back_token();
 		}
 		break;
 	}
 	case TOKEN_CLOSE_ROUND_BRACKETS: // EPSILON
-		fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->ε)\n");
+		fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->EPSILON)\n");
 		back_token();
 		break;
 
@@ -184,7 +184,7 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 
 	case TOKEN_SEMICOLON:
 	case TOKEN_CLOSE_ROUND_BRACKETS:
-		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  ε)\n");
+		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  EPSILON)\n");
 		back_token();
 		break;
 		
@@ -241,7 +241,7 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 	case TOKEN_COMMA:
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 	case TOKEN_CLOSE_ROUND_BRACKETS:
-		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> ε)\n");
+		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> EPSILON)\n");
 		back_token();
 		break;
 
@@ -302,7 +302,7 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 		break;
 
 	case TOKEN_END_OF_FILE:
-		fprintf(outputFile, "Rule(FUNC_DEFINITIONS_SUFFIX-> ε)\n");
+		fprintf(outputFile, "Rule(FUNC_DEFINITIONS_SUFFIX-> EPSILON)\n");
 		back_token();
 		break;
 
@@ -390,7 +390,7 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 		parse_VAR_DEFINITIONS(outputFile);
 		break;
 	case TOKEN_CLOSE_ROUND_BRACKETS:
-		fprintf(outputFile, "Rule(PARAM_DEFINITIONS-> ε)\n");
+		fprintf(outputFile, "Rule(PARAM_DEFINITIONS-> EPSILON)\n");
 		back_token();
 		break;
 
@@ -451,7 +451,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 
 	case TOKEN_KW_END:
 	case TOKEN_CLOSE_CURLY_BRACKETS:
-		fprintf(outputFile, "Rule(STATEMENTS_SUFFIX-> ε)\n");
+		fprintf(outputFile, "Rule(STATEMENTS_SUFFIX-> EPSILON)\n");
 		back_token();
 		break;
 
@@ -551,7 +551,7 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 		parse_EXPRESSION(outputFile);
 		break;
 	case TOKEN_SEMICOLON:
-		fprintf(outputFile, "Rule(RETURN_SUFFIX -> ε)\n");
+		fprintf(outputFile, "Rule(RETURN_SUFFIX -> EPSILON)\n");
 		back_token();
 		break;
 
@@ -606,7 +606,7 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 		parse_VARIABLES_LIST(outputFile);
 		break;
 	case TOKEN_CLOSE_ROUND_BRACKETS:
-		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  ε)\n");
+		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  EPSILON)\n");
 		back_token();
 		break;
 	default:
@@ -640,10 +640,11 @@ void parse_EXPRESSION(FILE* outputFile)
 		
 		tokenToCheck = peekN(t, 1); // looking to check what is the kind of the next token to decise how to act next.
 		
-		if (tokenToCheck->kind == TOKEN_ARITHMETIC_ASSIGNMENT)
+		if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION || tokenToCheck->kind == TOKEN_ARITHMETIC_MULTIPLICATION) // checking that after id is 'ar_op'
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
-			match(TOKEN_ARITHMETIC_ASSIGNMENT);
+			next_token();	// The program is doing what match suppose to do in the if statement above.
+			// because match reads the next token in order to compare, we called next_token() ourselves in order to be on the same token as if we used match instead.
 			parse_EXPRESSION(outputFile);
 		}
 		else

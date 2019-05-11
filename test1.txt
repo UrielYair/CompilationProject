@@ -1,0 +1,21 @@
+program program 
+Void void voiddd
+		varName_ok var_name_not__ok1 var_name_not_ok2_ _varname_not_ok3
+
+
+* ** = ==
+var_name_not_ok2_
+_varname_not_ok3
+
+///=/*
+3.14 556756 76.54353 354. .4243 --the last two nums are illegal
+;;;
+[
+[
+]]]
+()(((  --no error here: @#$%^&
+
+00.4
+A__B
+2_50_1.23
+1.40.5

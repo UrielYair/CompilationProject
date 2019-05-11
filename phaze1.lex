@@ -1,6 +1,8 @@
 %{
 #include "Utils.h"
 #include "Token.h"
+
+int lineNumber = 1;
 %}
 
 DIGIT		[0-9]

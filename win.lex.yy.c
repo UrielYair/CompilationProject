@@ -489,8 +489,10 @@ char *yytext;
 #line 2 "phaze1.lex"
 #include "Utils.h"
 #include "Token.h"
-#line 492 "win.lex.yy.c"
-#line 493 "win.lex.yy.c"
+
+int lineNumber = 1;
+#line 494 "win.lex.yy.c"
+#line 495 "win.lex.yy.c"
 
 #define INITIAL 0
 
@@ -704,10 +706,10 @@ YY_DECL
 		}
 
 	{
-#line 19 "phaze1.lex"
+#line 21 "phaze1.lex"
 
 
-#line 710 "win.lex.yy.c"
+#line 712 "win.lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -766,135 +768,135 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 21 "phaze1.lex"
+#line 23 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_PROGRAM,				yytext, lineNumber);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 22 "phaze1.lex"
+#line 24 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_END,					yytext, lineNumber);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 23 "phaze1.lex"
+#line 25 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_REAL,					yytext, lineNumber);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 24 "phaze1.lex"
+#line 26 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_INTEGER,				yytext, lineNumber);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 25 "phaze1.lex"
+#line 27 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_VOID,					yytext, lineNumber);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 26 "phaze1.lex"
+#line 28 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_KW_RETURN,				yytext, lineNumber);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 28 "phaze1.lex"
+#line 30 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_ARITHMETIC_DIVISION,		yytext, lineNumber);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 29 "phaze1.lex"
+#line 31 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_ARITHMETIC_MULTIPLICATION,yytext, lineNumber);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 30 "phaze1.lex"
+#line 32 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_ARITHMETIC_ASSIGNMENT,	yytext, lineNumber);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 32 "phaze1.lex"
+#line 34 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_SEMICOLON,				yytext, lineNumber);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 33 "phaze1.lex"
+#line 35 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_COMMA,					yytext, lineNumber);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 35 "phaze1.lex"
+#line 37 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_OPEN_CURLY_BRACKETS,		yytext, lineNumber);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 36 "phaze1.lex"
+#line 38 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_CLOSE_CURLY_BRACKETS,		yytext, lineNumber);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 38 "phaze1.lex"
+#line 40 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_OPEN_SQUARE_BRACKETS,		yytext, lineNumber);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 39 "phaze1.lex"
+#line 41 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_CLOSE_SQUARE_BRACKETS,	yytext, lineNumber);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 41 "phaze1.lex"
+#line 43 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_OPEN_ROUND_BRACKETS,		yytext, lineNumber);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 42 "phaze1.lex"
+#line 44 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_CLOSE_ROUND_BRACKETS,		yytext, lineNumber);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 45 "phaze1.lex"
+#line 47 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_ID,						yytext, lineNumber);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 46 "phaze1.lex"
+#line 48 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_INT_NUMBER,				yytext, lineNumber);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 47 "phaze1.lex"
+#line 49 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_REAL_NUMBER,				yytext, lineNumber);}
 	YY_BREAK
 case 21:
 /* rule 21 can match eol */
 YY_RULE_SETUP
-#line 49 "phaze1.lex"
+#line 51 "phaze1.lex"
 lineNumber++;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 50 "phaze1.lex"
+#line 52 "phaze1.lex"
 {}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 51 "phaze1.lex"
+#line 53 "phaze1.lex"
 {}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 52 "phaze1.lex"
+#line 54 "phaze1.lex"
 {return handleValidToken(yyout, TOKEN_END_OF_FILE,				yytext, lineNumber);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 54 "phaze1.lex"
+#line 56 "phaze1.lex"
 printInvalidTokenToConsole(yytext, lineNumber);
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 57 "phaze1.lex"
+#line 59 "phaze1.lex"
 ECHO;
 	YY_BREAK
-#line 897 "win.lex.yy.c"
+#line 899 "win.lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1897,7 +1899,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 57 "phaze1.lex"
+#line 59 "phaze1.lex"
 
 
 

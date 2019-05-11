@@ -1,3 +1,4 @@
+#include "Utils.h"
 #include "Token.h"
 #include <stdbool.h>
 
@@ -234,9 +235,9 @@ const char* tokenToString(enum eTOKENS kind)
 	}
 }
 
-Token* handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine)
+eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine)
 {
 	create_and_store_token(kind, lexeme, numOfLine);
 	printValidTokenToOutputFile(outputFile, kind, lexeme, numOfLine);
-	return &currentNode->tokensArray[currentIndex];
+	return currentNode->tokensArray[currentIndex].kind;
 }
