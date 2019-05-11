@@ -60,12 +60,12 @@ WHITE			[ \t]
 
 int main(int argc, char** argv) 
 {
-
-	
 	parseInputFile("C:\\temp\\test1.txt", 
 			 "c:\\temp\\test1_203605654_313583205_lex.txt",
 			 "c:\\temp\\test1_203605654_313583205_syntactic.txt");
+
+	parseInputFile("C:\\temp\\test2.txt", 
+			 "c:\\temp\\test2_203605654_313583205_lex.txt",
+			 "c:\\temp\\test2_203605654_313583205_syntactic.txt");
 	
-
-
 }
