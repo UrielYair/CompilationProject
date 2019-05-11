@@ -54,7 +54,6 @@ WHITE			[ \t]
 .													printInvalidTokenToConsole(yytext, lineNumber);
 
 
-
 %%
 
 int main(int argc, char** argv) 

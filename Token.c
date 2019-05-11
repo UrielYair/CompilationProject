@@ -13,7 +13,9 @@ There are three functions providing an external access to the storage:
 
 int currentIndex = 0;
 Node* currentNode = NULL;
-
+int distanceFromLastIdentifiedToken = 0; // will increase every time back_token() will be called.
+										// and decrease when next_token	will be called.
+										// the value will always be positive or zero.
 #define TOKEN_ARRAY_SIZE 100
 
 /*
@@ -90,11 +92,15 @@ void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine)
 /*
 * This function returns the token in the storage that is stored immediately before the current token (if exsits).
 */
-Token *back_token() {  
-	if(currentIndex == 0) 
+Token* back_token() {
+	
+	// updating distance from last identified token.
+	distanceFromLastIdentifiedToken++;
+	
+	if (currentIndex == 0)
 	{
 		// Previous node is needed.
-		if (currentNode->prev == NULL) 
+		if (currentNode->prev == NULL)
 		{
 			// Previous node is not exist (the program is on the first node which created).
 			printf("There is no previous node in the memory.\n");
@@ -108,15 +114,18 @@ Token *back_token() {
 			return &(currentNode->tokensArray)[currentIndex];
 		}
 	}
+
 	else
 	{
-		// Previous node is not needed.
-		// Update currentIndex only and return.
+		// currentIndex value is between 1-99 so previous node is not needed.
+		// ******************************************************************
+		// Update currentIndex only and return token.
 		currentIndex--;
 		return &(currentNode->tokensArray)[currentIndex];
 	}
-	
+
 }
+
 
 /*
 * If the next token already exists in the storage (this happens when back_token was called before this call to next_token): 
@@ -124,39 +133,38 @@ Token *back_token() {
 * Else: continues to read the input file in order to identify, create and store a new token (using yylex function);
 *  returns the token that was created.
 */
-Token* next_token() 
+Token* next_token()
 {
-	if (currentIndex == 99)
+	if (distanceFromLastIdentifiedToken == 0)
 	{
-		// Next node is needed.
-		if (currentNode->next == NULL)
-		{
-			// The program is currently on the last token that stores in the memory.
-			printf("No further tokens in the memory, The program is currently on the last one.\n");
-			return NULL;
-		}
-		else
-		{
-			// Retrieving next node.
-			currentNode = currentNode->next;
-			currentIndex = 0;
-			return &(currentNode->tokensArray)[currentIndex];
-		}
-	}
-	else
-	{
-		// Next node is not needed.
-		currentIndex++;
-		if (&currentNode->tokensArray[currentIndex] == NULL)
-		{
-			// The program is currently on the last token that stores in the memory.
-			printf("No further tokens in the memory, The program is currently on the last one.\n");
-			return NULL;
-		}
-		else
-			return &(currentNode->tokensArray)[currentIndex];
+		// next token need to be found by lexical analyzer:
+		yylex(); // will find a new valid token and store it. 
 	}
 
+	else
+	{	
+		// Next token already stored and need to be retrieved.
+		// ***************************************************
+
+		// updating distance from last identified token.
+		distanceFromLastIdentifiedToken--;
+		if (distanceFromLastIdentifiedToken < 0)
+			distanceFromLastIdentifiedToken = 0;
+
+		if (currentIndex == 99)
+		{
+			// Next node is needed.
+			currentNode = currentNode->next;
+			currentIndex = 0;
+		}
+		else
+		{
+			currentIndex++;  // Next node is not needed.
+		}
+				
+	}
+	// TODO: check if there is a chance somehow that "&(currentNode->tokensArray)[currentIndex]" holds null value.
+	return &(currentNode->tokensArray)[currentIndex];
 }
 
 bool match(eTOKENS expectedToken) 
@@ -226,9 +234,9 @@ const char* tokenToString(enum eTOKENS kind)
 	}
 }
 
-eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine) 
+Token* handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine)
 {
 	create_and_store_token(kind, lexeme, numOfLine);
 	printValidTokenToOutputFile(outputFile, kind, lexeme, numOfLine);
-	return kind;
+	return &currentNode->tokensArray[currentIndex];
 }

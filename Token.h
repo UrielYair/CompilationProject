@@ -77,6 +77,6 @@ Token *back_token();
 
 bool match(eTOKENS expectedToken);
 const char* tokenToString(enum eTOKENS kind);
-eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
+Token* handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
 
 #endif
