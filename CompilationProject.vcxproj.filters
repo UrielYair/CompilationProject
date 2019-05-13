@@ -32,10 +32,10 @@
     <ClCompile Include="Utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win.lex.yy.c">
+    <ClCompile Include="Parser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.c">
+    <ClCompile Include="win.lex.yy.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

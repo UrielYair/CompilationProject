@@ -79,5 +79,6 @@ bool match(eTOKENS expectedToken);
 const char* tokenToString(enum eTOKENS kind);
 eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
 Token* peekN(Token* current, int numberOfNexts);
+Token* getCurrentToken();
 
 #endif

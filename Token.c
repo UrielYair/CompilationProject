@@ -165,7 +165,7 @@ Token* next_token()
 				
 	}
 	// TODO: check if there is a chance somehow that "&(currentNode->tokensArray)[currentIndex]" holds null value.
-	return &(currentNode->tokensArray)[currentIndex];
+	return getCurrentToken();	//&(currentNode->tokensArray)[currentIndex];
 }
 
 bool match(eTOKENS expectedToken) 
@@ -196,7 +196,7 @@ Token* peekN(Token* current, int numberOfNexts)
 	{
 		// if none of the next_token() calls returns null, it will be fine to save the "peeked" token.
 		// if not - it means that next_token() got out of bounds.
-		returnToken = &currentNode->tokensArray[currentIndex];
+		returnToken = getCurrentToken();
 	}
 	
 	for (int i = 0; i < numberOfNexts; i++)
@@ -240,4 +240,10 @@ eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOf
 	create_and_store_token(kind, lexeme, numOfLine);
 	printValidTokenToOutputFile(outputFile, kind, lexeme, numOfLine);
 	return currentNode->tokensArray[currentIndex].kind;
+}
+
+Token* getCurrentToken()
+{
+	Token* currentToken = &currentNode->tokensArray[currentIndex];
+	return currentToken;
 }

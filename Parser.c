@@ -1,14 +1,16 @@
 ﻿#include "Token.h"
 #include "Parser.h"
-
+#include <stdio.h>
 
 void parse_PROGRAM(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = getCurrentToken();
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_PROGRAM:
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
+		//match(TOKEN_KW_PROGRAM);
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
@@ -28,7 +30,7 @@ void parse_PROGRAM(FILE* outputFile)
 }
 void parse_VAR_DEFINITIONS(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
@@ -43,6 +45,7 @@ void parse_VAR_DEFINITIONS(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -55,27 +58,27 @@ void parse_VAR_DEFINITIONS(FILE* outputFile)
 void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_SEMICOLON:
 	{
-		Token* tokenToCheck = peekN(t, 1); // looking to check what is the kind of the next token to decise how to act next.
+		Token* tokenToCheck = peekN(t, 2); // looking to check what is the kind of the next token to decise how to act next.
 		if (tokenToCheck->kind == TOKEN_KW_INTEGER || tokenToCheck->kind == TOKEN_KW_REAL)
 		{
 			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX  -> ; VAR_DEFINITIONS)\n");
+			match(TOKEN_SEMICOLON);
 			parse_VAR_DEFINITIONS(outputFile);
 		}
 		else
 		{
 			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->EPSILON)\n");
-			back_token();
 		}
 		break;
 	}
 	case TOKEN_CLOSE_ROUND_BRACKETS: // EPSILON
 		fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX->EPSILON)\n");
-		back_token();
+
 		break;
 
 	default:
@@ -84,6 +87,7 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -94,7 +98,7 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 }
 void parse_VAR_DEFINITION(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_INTEGER:
@@ -110,6 +114,7 @@ void parse_VAR_DEFINITION(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -120,14 +125,16 @@ void parse_VAR_DEFINITION(FILE* outputFile)
 }
 void parse_TYPE(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(TYPE ->  real)\n");
+		match(TOKEN_KW_REAL);
 		break;
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(TYPE ->  integer)\n");
+		match(TOKEN_KW_INTEGER);
 		break;
 	
 	default:
@@ -136,6 +143,7 @@ void parse_TYPE(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"ID EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -146,7 +154,7 @@ void parse_TYPE(FILE* outputFile)
 }
 void parse_VARIABLES_LIST(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_ID:
@@ -161,6 +169,7 @@ void parse_VARIABLES_LIST(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -173,11 +182,12 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
 
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_COMMA:
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
+		match(TOKEN_COMMA);
 		parse_VARIABLE(outputFile);
 		parse_VARIABLES_LIST_SUFFIX(outputFile);
 		break;
@@ -185,7 +195,7 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 	case TOKEN_SEMICOLON:
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  EPSILON)\n");
-		back_token();
+
 		break;
 		
 	default:
@@ -194,6 +204,7 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -204,11 +215,12 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 }
 void parse_VARIABLE(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLE ->  id VARIABLE_SUFFIX)\n");
+		match(TOKEN_ID);
 		parse_VARIABLE_SUFFIX(outputFile);
 		break;
 	default:
@@ -217,6 +229,7 @@ void parse_VARIABLE(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) , EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -228,11 +241,12 @@ void parse_VARIABLE(FILE* outputFile)
 void parse_VARIABLE_SUFFIX(FILE* outputFile)
 {
 	//nullable - done
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
+		match(TOKEN_OPEN_SQUARE_BRACKETS);
 		match(TOKEN_INT_NUMBER);
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
 		break;
@@ -242,14 +256,16 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> EPSILON)\n");
-		back_token();
-		break;
 
+		break;
+	
+	default:
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS && t->kind != TOKEN_COMMA && t->kind != TOKEN_ARITHMETIC_ASSIGNMENT
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; ) , = EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -261,8 +277,7 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 }
 void parse_FUNC_DEFINITIONS(FILE* outputFile)
 {
-
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
@@ -276,6 +291,7 @@ void parse_FUNC_DEFINITIONS(FILE* outputFile)
 		while (
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -290,7 +306,7 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
 	
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
@@ -303,13 +319,14 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 
 	case TOKEN_END_OF_FILE:
 		fprintf(outputFile, "Rule(FUNC_DEFINITIONS_SUFFIX-> EPSILON)\n");
-		back_token();
+
 		break;
 
 	default:
 		while (
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -321,7 +338,7 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 }
 void parse_FUNC_DEFINITION(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
@@ -342,6 +359,7 @@ void parse_FUNC_DEFINITION(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"void real integer EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -352,11 +370,12 @@ void parse_FUNC_DEFINITION(FILE* outputFile)
 }
 void parse_RETURNED_TYPE(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  void)\n");
+		match(TOKEN_KW_VOID);
 		break;
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
@@ -369,6 +388,7 @@ void parse_RETURNED_TYPE(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"ID EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -380,8 +400,7 @@ void parse_RETURNED_TYPE(FILE* outputFile)
 void parse_PARAM_DEFINITIONS(FILE* outputFile)
 {
 	// nullable - done
-
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
@@ -391,7 +410,7 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 		break;
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(PARAM_DEFINITIONS-> EPSILON)\n");
-		back_token();
+
 		break;
 
 	default:
@@ -400,6 +419,7 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				") EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -410,7 +430,7 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 }
 void parse_STATEMENTS(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_RETURN:
@@ -427,6 +447,7 @@ void parse_STATEMENTS(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"end } EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -439,7 +460,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 {
 	// nullable -done
 
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_KW_RETURN:
@@ -452,7 +473,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 	case TOKEN_KW_END:
 	case TOKEN_CLOSE_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS_SUFFIX-> EPSILON)\n");
-		back_token();
+
 		break;
 
 	default:
@@ -461,6 +482,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"end } EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -471,7 +493,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 }
 void parse_STATEMENT(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 
@@ -482,11 +504,13 @@ void parse_STATEMENT(FILE* outputFile)
 
 	case TOKEN_KW_RETURN:
 		fprintf(outputFile, "Rule(STATEMENT ->  return RETURN_SUFFIX)\n");
+		match(TOKEN_KW_RETURN);
 		parse_RETURN_SUFFIX(outputFile);
 		break;
 
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(STATEMENT ->  id STATEMENT_SUFFIX)\n");
+		match(TOKEN_ID);
 		parse_STATEMENT_SUFFIX(outputFile);
 		break;
 
@@ -496,6 +520,7 @@ void parse_STATEMENT(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -506,11 +531,12 @@ void parse_STATEMENT(FILE* outputFile)
 }
 void parse_STATEMENT_SUFFIX(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
+		match(TOKEN_OPEN_ROUND_BRACKETS);
 		parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		break;
@@ -529,6 +555,7 @@ void parse_STATEMENT_SUFFIX(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -541,7 +568,7 @@ void parse_STATEMENT_SUFFIX(FILE* outputFile)
 void parse_RETURN_SUFFIX(FILE* outputFile)
 {
 	//nullable - done
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_INT_NUMBER:
@@ -552,7 +579,7 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 		break;
 	case TOKEN_SEMICOLON:
 		fprintf(outputFile, "Rule(RETURN_SUFFIX -> EPSILON)\n");
-		back_token();
+
 		break;
 
 	default:
@@ -561,6 +588,7 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -571,11 +599,12 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 }
 void parse_BLOCK(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(BLOCK -> { VAR_DEFINITIONS; STATEMENTS })\n");
+		match(TOKEN_OPEN_CURLY_BRACKETS);
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
@@ -587,6 +616,7 @@ void parse_BLOCK(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"void real integer ; EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -598,7 +628,7 @@ void parse_BLOCK(FILE* outputFile)
 void parse_PARAMETERS_LIST(FILE* outputFile)
 {
 	//nullable - done
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
 	{
 	case TOKEN_ID:
@@ -607,7 +637,7 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 		break;
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  EPSILON)\n");
-		back_token();
+
 		break;
 	default:
 		while (
@@ -615,6 +645,7 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				") EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();
@@ -625,26 +656,28 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 }
 void parse_EXPRESSION(FILE* outputFile)
 {
-	Token* t = next_token();
+	Token* t = peekN(getCurrentToken(), 1);
 	Token* tokenToCheck;
 
 	switch (t->kind)
 	{
 	case TOKEN_INT_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  int_number)\n");
+		match(TOKEN_INT_NUMBER);
 		break;
 	case TOKEN_REAL_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  real_number)\n");
+		match(TOKEN_REAL_NUMBER);
 		break;
 	case TOKEN_ID:
 		
-		tokenToCheck = peekN(t, 1); // looking to check what is the kind of the next token to decise how to act next.
+		tokenToCheck = peekN(t, 2); // looking to check what is the kind of the next token to decise how to act next.
 		
 		if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION || tokenToCheck->kind == TOKEN_ARITHMETIC_MULTIPLICATION) // checking that after id is 'ar_op'
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
-			next_token();	// The program is doing what match suppose to do in the if statement above.
-			// because match reads the next token in order to compare, we called next_token() ourselves in order to be on the same token as if we used match instead.
+			match(TOKEN_ID);
+			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
 			parse_EXPRESSION(outputFile);
 		}
 		else
@@ -653,12 +686,14 @@ void parse_EXPRESSION(FILE* outputFile)
 			parse_VARIABLE(outputFile);
 		}
 		break;
+
 	default:
 		while (
 			t->kind != TOKEN_SEMICOLON
 			&&
 			t->kind != TOKEN_END_OF_FILE)
 		{
+			
 			printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 				"; EOF", t->lineNumber, tokenToString(t->kind), t->lexeme);
 			t = next_token();

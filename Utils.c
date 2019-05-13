@@ -49,6 +49,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	}
 
 	// Parseing input file:
+	yylex(); //in order to save the first token in memory.
 	parse_PROGRAM(syntacticOutput);
 	match(TOKEN_END_OF_FILE);
 
