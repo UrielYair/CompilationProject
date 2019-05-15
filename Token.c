@@ -164,7 +164,6 @@ Token* next_token()
 		}
 				
 	}
-	// TODO: check if there is a chance somehow that "&(currentNode->tokensArray)[currentIndex]" holds null value.
 	return getCurrentToken();	//&(currentNode->tokensArray)[currentIndex];
 }
 
@@ -191,18 +190,19 @@ Token* peekN(Token* current, int numberOfNexts)
 		if (NULL != next_token())
 			successfulNexts++;
 	}
-	
+
 	if (successfulNexts == numberOfNexts)
 	{
 		// if none of the next_token() calls returns null, it will be fine to save the "peeked" token.
 		// if not - it means that next_token() got out of bounds.
 		returnToken = getCurrentToken();
 	}
-	
-	for (int i = 0; i < numberOfNexts; i++)
+
+	for (int i = 0; i < successfulNexts; i++)
 	{
 		back_token();
 	}
+	
 	return returnToken;
 }
 
@@ -246,4 +246,45 @@ Token* getCurrentToken()
 {
 	Token* currentToken = &currentNode->tokensArray[currentIndex];
 	return currentToken;
+}
+
+void freeMemory()
+{
+	Node* nodeToFree, *nextNode;
+	nodeToFree = getFirstNode();
+	
+	while (nodeToFree != NULL)
+	{
+		nextNode = nodeToFree->next;
+		
+		//free prev:
+		free(&nodeToFree->prev);
+		//free next:
+		free(&nodeToFree->next);
+
+		for (int i = 0; i < TOKEN_ARRAY_SIZE; i++)
+		{
+			if (&nodeToFree->tokensArray[i] == NULL)
+				break;
+
+			//free lexeme:
+			free(&nodeToFree->tokensArray[i].lexeme);
+
+			//free array element:
+			free(&nodeToFree->tokensArray[i]);
+
+		}
+
+		//free array:
+		free(&nodeToFree->tokensArray);
+		//free the whole node:
+		free(nodeToFree);
+	}
+}
+
+Token* getFirstNode() 
+{
+	while (currentNode->prev != NULL)
+		currentNode = currentNode->prev;
+	return currentNode;
 }

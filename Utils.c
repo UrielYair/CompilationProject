@@ -54,8 +54,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	match(TOKEN_END_OF_FILE);
 
 	//free nodes and memory:
-	// **** free free free ****
-	// TODO: implement free memory method.
+	freeMemory();
 
 	// Files closing:
 	fclose(yyin);
