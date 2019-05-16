@@ -40,6 +40,7 @@ void parse_VAR_DEFINITIONS(FILE* outputFile)
 		parse_VAR_DEFINITIONS_SUFFIX(outputFile);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -82,6 +83,7 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -109,6 +111,7 @@ void parse_VAR_DEFINITION(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -138,6 +141,7 @@ void parse_TYPE(FILE* outputFile)
 		break;
 	
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_ID
 			&&
@@ -164,6 +168,7 @@ void parse_VARIABLES_LIST(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -199,6 +204,7 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 		break;
 		
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -224,6 +230,7 @@ void parse_VARIABLE(FILE* outputFile)
 		parse_VARIABLE_SUFFIX(outputFile);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS && t->kind != TOKEN_COMMA
 			&&
@@ -260,6 +267,7 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 		break;
 	
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON && t->kind != TOKEN_CLOSE_ROUND_BRACKETS && t->kind != TOKEN_COMMA && t->kind != TOKEN_ARITHMETIC_ASSIGNMENT
 			&&
@@ -288,6 +296,7 @@ void parse_FUNC_DEFINITIONS(FILE* outputFile)
 		parse_FUNC_DEFINITIONS_SUFFIX(outputFile);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_END_OF_FILE)
 		{
@@ -323,6 +332,7 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_END_OF_FILE)
 		{
@@ -354,6 +364,7 @@ void parse_FUNC_DEFINITION(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_KW_VOID && t->kind != TOKEN_KW_REAL && t->kind != TOKEN_KW_INTEGER 
 			&&
@@ -383,6 +394,7 @@ void parse_RETURNED_TYPE(FILE* outputFile)
 		parse_TYPE(outputFile);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_ID
 			&&
@@ -414,6 +426,7 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -442,6 +455,7 @@ void parse_STATEMENTS(FILE* outputFile)
 		parse_STATEMENTS_SUFFIX(outputFile);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_KW_END && t->kind != TOKEN_CLOSE_CURLY_BRACKETS
 			&&
@@ -477,6 +491,7 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_KW_END && t->kind != TOKEN_CLOSE_CURLY_BRACKETS
 			&&
@@ -515,6 +530,7 @@ void parse_STATEMENT(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON
 			&&
@@ -550,6 +566,7 @@ void parse_STATEMENT_SUFFIX(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON
 			&&
@@ -583,6 +600,7 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON
 			&&
@@ -611,6 +629,7 @@ void parse_BLOCK(FILE* outputFile)
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_KW_VOID && t->kind != TOKEN_KW_REAL && t->kind != TOKEN_KW_INTEGER && t->kind != TOKEN_SEMICOLON
 			&&
@@ -640,6 +659,7 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 
 		break;
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_CLOSE_ROUND_BRACKETS
 			&&
@@ -688,6 +708,7 @@ void parse_EXPRESSION(FILE* outputFile)
 		break;
 
 	default:
+		t = next_token();
 		while (
 			t->kind != TOKEN_SEMICOLON
 			&&

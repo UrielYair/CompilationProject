@@ -3,7 +3,6 @@
 #include <string.h>
 
 
-
 int yywrap() { return 1; }
 
 void printValidTokenToOutputFile(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine)
