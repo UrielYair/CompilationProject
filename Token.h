@@ -81,6 +81,6 @@ eTOKENS handleValidToken(FILE* outputFile, eTOKENS kind, char* lexeme, int numOf
 Token* peekN(Token* current, int numberOfNexts);
 Token* getCurrentToken();
 void freeMemory();
-Token* getFirstNode();
+Node* getFirstNode();
 
 #endif

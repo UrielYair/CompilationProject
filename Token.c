@@ -1,8 +1,10 @@
 #include "Utils.h"
 #include "Token.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
-/* This package describes the storage of tokens identified in the input text.
+/* 
+This package describes the storage of tokens identified in the input text.
 * The storage is a bi-directional list of nodes.
 * Each node is an array of tokens; the size of this array is defined as TOKEN_ARRAY_SIZE.
 * Such data structure supports an efficient way to manipulate tokens.
@@ -12,16 +14,14 @@ There are three functions providing an external access to the storage:
 - functions next_token and back_token; they are called by parser during the syntax analysis (the second stage of compilation)
 */
 
+#define TOKEN_ARRAY_SIZE 100
 int currentIndex = 0;
 Node* currentNode = NULL;
-int distanceFromLastIdentifiedToken = 0; // will increase every time back_token() will be called.
-										// and decrease when next_token	will be called.
-										// the value will always be positive or zero.
-#define TOKEN_ARRAY_SIZE 100
+int distanceFromLastIdentifiedToken = 0;	// will increase every time back_token() will be called.
+											// and decrease when next_token	will be called.
+											// the value will always be positive or zero.
 
-/*
-* This function creates a token and stores it in the storage.
-*/
+/* This function creates a token and stores it in the storage. */
 void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine)
 { 
 	int length = strlen(lexeme)+1;
@@ -90,9 +90,7 @@ void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine)
 	#endif		
 }
 
-/*
-* This function returns the token in the storage that is stored immediately before the current token (if exsits).
-*/
+/* This function returns the token in the storage that is stored immediately before the current token (if exsits). */
 Token* back_token() {
 	
 	// updating distance from last identified token.
@@ -126,7 +124,6 @@ Token* back_token() {
 	}
 
 }
-
 
 /*
 * If the next token already exists in the storage (this happens when back_token was called before this call to next_token): 
@@ -250,17 +247,13 @@ Token* getCurrentToken()
 
 void freeMemory()
 {
-	Node* nodeToFree, *nextNode;
+	Node *nodeToFree, *nextNode;
 	nodeToFree = getFirstNode();
 	
 	while (nodeToFree != NULL)
 	{
+		//saving next node:
 		nextNode = nodeToFree->next;
-		
-		//free prev:
-		free(&nodeToFree->prev);
-		//free next:
-		free(&nodeToFree->next);
 
 		for (int i = 0; i < TOKEN_ARRAY_SIZE; i++)
 		{
@@ -268,21 +261,23 @@ void freeMemory()
 				break;
 
 			//free lexeme:
-			free(&nodeToFree->tokensArray[i].lexeme);
-
-			//free array element:
-			free(&nodeToFree->tokensArray[i]);
-
+			free(nodeToFree->tokensArray[i].lexeme);
 		}
 
 		//free array:
-		free(&nodeToFree->tokensArray);
-		//free the whole node:
+		free(nodeToFree->tokensArray);
+
+		//free current node:
 		free(nodeToFree);
+
+		nodeToFree = nextNode;
 	}
+
+	//free the whole node:
+	free(nodeToFree);
 }
 
-Token* getFirstNode() 
+Node* getFirstNode() 
 {
 	while (currentNode->prev != NULL)
 		currentNode = currentNode->prev;
