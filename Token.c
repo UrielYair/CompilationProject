@@ -275,6 +275,11 @@ void freeMemory()
 
 	//free the whole node:
 	free(nodeToFree);
+
+	//Initial global variables with default values:
+	currentIndex = 0;
+	currentNode = NULL;
+	distanceFromLastIdentifiedToken = 0;
 }
 
 Node* getFirstNode() 
