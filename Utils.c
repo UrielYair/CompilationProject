@@ -24,7 +24,10 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	
 	// I/O Validation:
 	if (yyin == NULL) {
-		printf("Error! opening input file failed.\n");
+		printf("Error! opening input file failed.\nPress any key to continue\n");
+		printf("***********************************************************************************************\n");
+		printf("***********************************************************************************************\n");
+		getchar();
 		return 1;
 	}
 
@@ -32,7 +35,10 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	yyout = fopen(lexicalOutputFileName, "w");
 
 	if (yyout == NULL) {
-		printf("Error! creating output file for lexical analyzing failed.\n");
+		printf("Error! creating output file for lexical analyzing failed.\nPress any key to continue\n");
+		printf("***********************************************************************************************\n");
+		printf("***********************************************************************************************\n");
+		getchar();
 		fclose(yyin);
 		return 1;
 	}
@@ -41,7 +47,10 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	FILE *syntacticOutput = fopen(syntacticOutputFileName, "w");
 		
 	if (syntacticOutput == NULL) {
-		printf("Error! creating output file for syntactical analyzing failed.\n");
+		printf("Error! creating output file for syntactical analyzing failed.\nPress any key to continue\n");
+		printf("***********************************************************************************************\n");
+		printf("***********************************************************************************************\n");
+		getchar();
 		fclose(yyin);
 		fclose(yyout);
 		return 1;
@@ -59,6 +68,11 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	fclose(yyin);
 	fclose(yyout);
 	fclose(syntacticOutput);
+
+	printf("***********************************************************************************************\n");
+	printf("***********************************************************************************************\n");
+	getchar();
+
 	return 0;
 }
 
