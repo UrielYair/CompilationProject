@@ -4,7 +4,7 @@
 
 void parse_PROGRAM(FILE* outputFile)
 {
-	Token* t = getCurrentToken();
+	Token* t = next_token();
 
 	switch (t->kind)
 	{

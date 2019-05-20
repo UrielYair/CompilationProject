@@ -133,7 +133,7 @@ Token* back_token() {
 */
 Token* next_token()
 {
-	if (distanceFromLastIdentifiedToken == 0)
+	if (distanceFromLastIdentifiedToken == 0 || currentNode == NULL)
 	{
 		// next token need to be found by lexical analyzer:
 		yylex(); // will find a new valid token and store it. 
