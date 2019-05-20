@@ -26,7 +26,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	if (yyin == NULL) {
 		printf("Error! opening input file failed.\nPress any key to continue\n");
 		printf("***********************************************************************************************\n");
-		printf("***********************************************************************************************\n");
+		printf("Press any key to continue\n");
 		getchar();
 		return 1;
 	}
@@ -37,7 +37,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	if (yyout == NULL) {
 		printf("Error! creating output file for lexical analyzing failed.\nPress any key to continue\n");
 		printf("***********************************************************************************************\n");
-		printf("***********************************************************************************************\n");
+		printf("Press any key to continue\n");
 		getchar();
 		fclose(yyin);
 		return 1;
@@ -49,7 +49,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	if (syntacticOutput == NULL) {
 		printf("Error! creating output file for syntactical analyzing failed.\nPress any key to continue\n");
 		printf("***********************************************************************************************\n");
-		printf("***********************************************************************************************\n");
+		printf("Press any key to continue\n");
 		getchar();
 		fclose(yyin);
 		fclose(yyout);
@@ -70,7 +70,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	fclose(syntacticOutput);
 
 	printf("***********************************************************************************************\n");
-	printf("***********************************************************************************************\n");
+	printf("Press any key to continue\n");
 	getchar();
 
 	return 0;
