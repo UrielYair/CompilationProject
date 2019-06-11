@@ -13,6 +13,7 @@ void printValidTokenToOutputFile(FILE* outputFile, eTOKENS kind, char* lexeme, i
 void printInvalidTokenToConsole(char* lexeme, int numOfLine)
 {
 	printf("The character %c at line : %u does not begin any legal token in the language.\n", *lexeme, numOfLine);
+	next_token();
 }
 
 int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName)
