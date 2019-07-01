@@ -127,14 +127,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="prime.h" />
+    <ClInclude Include="HashTable.h" />
+    <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="xmalloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser.c" />
+    <ClCompile Include="prime.c" />
+    <ClCompile Include="HashTable.c" />
+    <ClCompile Include="SymbolTable.c" />
     <ClCompile Include="Token.c" />
     <ClCompile Include="Utils.c" />
     <ClCompile Include="win.lex.yy.c" />
+    <ClCompile Include="xmalloc.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="phaze1.lex" />
