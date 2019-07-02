@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+// TODO: check if allocation successeded. (malloc/calloc/realloc)
+// TODO: add free function wherever allocation be done.	
 
 SymbolTable* currentTable = NULL;
 
@@ -24,7 +26,10 @@ SymbolTable* pop_table() {
 
 ID_Information* insert(char* id_name) {
 	// TODO: check if already in the table.
-	ID_Information* info = (ID_Information*)malloc(sizeof(ID_Information));
+	ID_Information* info = lookup(id_name);
+	if (info != NULL) // TODO: add error printing.
+		return NULL;	
+	info = (ID_Information*)malloc(sizeof(ID_Information));
 	info->name = strdup(id_name);
 	ht_insert(currentTable->currentSymbolTable, id_name, info);
 	return info;
@@ -60,7 +65,9 @@ char* get_id_type(ID_Information* id_entry) {
 	else
 		return id_entry->returnedType;
 }
-
+void free_ID_info(ID_Information* id_entry) {
+	// TODO: Implement!!
+}
 
 
 /*

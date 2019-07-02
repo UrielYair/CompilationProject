@@ -2,6 +2,7 @@
 #define SYMBOL_TABLE_H
 
 #include "HashTable.h"
+#include <stdbool.h>
 
 typedef struct SymbolTable {
 
@@ -39,4 +40,5 @@ typedef struct ID_Information {
 	void			set_id_type(ID_Information* id_entry, char* id_type);
 	char*			get_id_type(ID_Information* id_entry);
 
+	void			free_ID_info(ID_Information* id_entry);
 #endif  // SYMBOL_TABLE_H
