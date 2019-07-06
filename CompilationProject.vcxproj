@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="IDInfoLinkedList.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="prime.h" />
     <ClInclude Include="HashTable.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="xmalloc.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="IDInfoLinkedList.c" />
     <ClCompile Include="Parser.c" />
     <ClCompile Include="prime.c" />
     <ClCompile Include="HashTable.c" />

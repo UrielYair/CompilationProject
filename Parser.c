@@ -1,8 +1,14 @@
 ﻿#include "Token.h"
 #include "Parser.h"
+#include "SymbolTable.h"
+#include "IDInfoLinkedList.h"
+#include <string.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-void parse_PROGRAM(FILE* outputFile)
+// TODO: after any match(TOKEN_ID); add insert() and validation.
+
+void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
 
@@ -28,16 +34,23 @@ void parse_PROGRAM(FILE* outputFile)
 		break;
 	}
 }
-void parse_VAR_DEFINITIONS(FILE* outputFile)
+
+/* This function will return linked list of all the ID's that discovered durring derivation of the input.*/
+IDInfoLinkNode* parse_VAR_DEFINITIONS		(FILE* outputFile)
 {
+	IDInfoLinkNode* headOfIdsList = NULL;
+	IDInfoLinkNode* tailOfIDsList = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(VAR_DEFINITIONS -> VAR_DEFINITION VAR_DEFINITIONS_SUFFIX)\n");
-		parse_VAR_DEFINITION(outputFile);
-		parse_VAR_DEFINITIONS_SUFFIX(outputFile);
+		headOfIdsList = parse_VAR_DEFINITION(outputFile);			// parse_VAR_DEFINITION() will return only one ID_Information.
+		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile);	// parse_VAR_DEFINITIONS_SUFFIX() will return list of ID's with their info.
+		if (tailOfIDsList != NULL)
+			headOfIdsList = listsConcat(headOfIdsList, tailOfIDsList);
 		break;
 	default:
 		t = next_token();
@@ -53,12 +66,14 @@ void parse_VAR_DEFINITIONS(FILE* outputFile)
 		back_token();
 		break;
 	}
-	
+	return headOfIdsList;
 }
-void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
+IDInfoLinkNode* parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
+	IDInfoLinkNode* listOfIDsToReturn = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
+	
 	switch (t->kind)
 	{
 	case TOKEN_SEMICOLON:
@@ -68,7 +83,7 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 		{
 			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX  -> ; VAR_DEFINITIONS)\n");
 			match(TOKEN_SEMICOLON);
-			parse_VAR_DEFINITIONS(outputFile);
+			listOfIDsToReturn = parse_VAR_DEFINITIONS(outputFile);
 		}
 		else
 		{
@@ -94,17 +109,21 @@ void parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return listOfIDsToReturn;
 }
-void parse_VAR_DEFINITION(FILE* outputFile)
+/* This function will return list of ID's of the same type. */
+IDInfoLinkNode* parse_VAR_DEFINITION		(FILE* outputFile)
 {
+	IDInfoLinkNode* listOfIDs = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_INTEGER:
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(VAR_DEFINITION ->  TYPE  VARIABLES_LIST)\n");
-		parse_TYPE(outputFile);
-		parse_VARIABLES_LIST(outputFile);
+		char* id_type = parse_TYPE(outputFile);
+		listOfIDs = parse_VARIABLES_LIST(outputFile, id_type);
 		break;
 
 	default:
@@ -121,18 +140,23 @@ void parse_VAR_DEFINITION(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return listOfIDs;
 }
-void parse_TYPE(FILE* outputFile)
+char*			parse_TYPE					(FILE* outputFile)
 {
+	char* typeOfID = NULL;		// in order to update attribute of the ID.
 	Token* t = peekN(getCurrentToken(), 1);
+	
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(TYPE ->  real)\n");
+		typeOfID = strdup("real"); 
 		match(TOKEN_KW_REAL);
 		break;
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(TYPE ->  integer)\n");
+		typeOfID = strdup("integer");
 		match(TOKEN_KW_INTEGER);
 		break;
 	
@@ -150,16 +174,24 @@ void parse_TYPE(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return typeOfID;
 }
-void parse_VARIABLES_LIST(FILE* outputFile)
+IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 {
+	IDInfoLinkNode* headOfIDsList = NULL;
+	IDInfoLinkNode* tailOfIDsList = NULL;
+	ID_Information* headNode = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
+	
 	switch (t->kind)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
-		parse_VARIABLE(outputFile);
-		parse_VARIABLES_LIST_SUFFIX(outputFile);
+		headNode = parse_VARIABLE(outputFile, id_type);
+		// TODO: make node to be link
+		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
+		if (tailOfIDsList != NULL)
+			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
 	default:
@@ -176,19 +208,27 @@ void parse_VARIABLES_LIST(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return headOfIDsList;
 }
-void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
+IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 {
+	//TODO: check if reverse list is needed.
 	// nullable - done
-
 	Token* t = peekN(getCurrentToken(), 1);
+	IDInfoLinkNode* headOfIDsList = NULL;
+	IDInfoLinkNode* tailOfIDsList = NULL;
+	ID_Information* IDInfo = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_COMMA:
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
-		parse_VARIABLE(outputFile);
-		parse_VARIABLES_LIST_SUFFIX(outputFile);
+		IDInfo = parse_VARIABLE(outputFile, id_type);
+		// TODO: make IDInfo to be head link of the list.
+		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
+		if (tailOfIDsList != NULL)
+			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
 	case TOKEN_SEMICOLON:
@@ -210,17 +250,29 @@ void parse_VARIABLES_LIST_SUFFIX(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return headOfIDsList;
 }
-void parse_VARIABLE(FILE* outputFile)
+ID_Information* parse_VARIABLE				(FILE* outputFile)
 {
+	ID_Information* new_id = NULL;
+	char* id_name;
 	Token* t = peekN(getCurrentToken(), 1);
+
 	switch (t->kind)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLE ->  id VARIABLE_SUFFIX)\n");
 		match(TOKEN_ID);
-		parse_VARIABLE_SUFFIX(outputFile);
+
+		id_name = getIdLexeme();
+		insert(id_name);	// will automatically check if alraedy exist in the symbol table or not.
+		// TODO: update attribute of id to be of id_type that get from the argument.
+		
+		parse_VARIABLE_SUFFIX(outputFile, id_name);		// if parse_VARIABLE_SUFFIX() will find that the id is an 
+														// array, it will update the entry in the symbol table.
+		new_id = find(id_name);
 		break;
+
 	default:
 		t = next_token();
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -235,18 +287,26 @@ void parse_VARIABLE(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return new_id;
 }
-void parse_VARIABLE_SUFFIX(FILE* outputFile)
+char*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
+	char* variableType = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
-		match(TOKEN_INT_NUMBER);
+		if (match(TOKEN_INT_NUMBER))
+			printf("hi!");	// delete it after implementing the TODO.
+			// TODO: set the id to be an array and set its size, 
+			//       check that the size makes sense and not negative. 
+			//		 (if the id is already an array, validate the index to be in the baundaries.)
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
+		variableType = get_id_type(find(getIdLexeme(id_name))); // TODO: check.
 		break;
 
 	case TOKEN_SEMICOLON:
@@ -269,10 +329,10 @@ void parse_VARIABLE_SUFFIX(FILE* outputFile)
 		}
 		back_token();
 		break;
-
 	}
+
 }
-void parse_FUNC_DEFINITIONS(FILE* outputFile)
+void			parse_FUNC_DEFINITIONS		(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
 	switch (t->kind)
@@ -299,7 +359,7 @@ void parse_FUNC_DEFINITIONS(FILE* outputFile)
 
 
 }
-void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
+void			parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
 	
@@ -332,21 +392,30 @@ void parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 	}
 
 }
-void parse_FUNC_DEFINITION(FILE* outputFile)
+void			parse_FUNC_DEFINITION		(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	char* id_type = NULL;
+	IDInfoLinkNode* argumentsOfFunction = NULL;
+	char* returnedTypeOfBlock = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(FUNC_DEFINITION -> RETURNED_TYPE id ( PARAM_DEFINITIONS ) BLOCK)\n");
-		parse_RETURNED_TYPE(outputFile);
+		id_type = parse_RETURNED_TYPE(outputFile);
 		match(TOKEN_ID);
+		// TODO: insert and validation.
+		// TODO: set_id with id_type and make it function type.
 		match(TOKEN_OPEN_ROUND_BRACKETS);
-		parse_PARAM_DEFINITIONS(outputFile);
+		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
+		// TODO: set_id with list of arguments.
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
-		parse_BLOCK(outputFile);
+		returnedTypeOfBlock = parse_BLOCK(outputFile);
+		if (strcmp(id_type, returnedTypeOfBlock) != 0)
+			printf("not good!"); // TODO: change the error messege to a meaningful one
 		break;
 
 	default:
@@ -364,20 +433,25 @@ void parse_FUNC_DEFINITION(FILE* outputFile)
 		break;
 	}
 }
-void parse_RETURNED_TYPE(FILE* outputFile)
+char*			parse_RETURNED_TYPE			(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	char* id_type = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_VOID:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  void)\n");
 		match(TOKEN_KW_VOID);
+		id_type = strdup("void");
 		break;
+
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  TYPE)\n");
-		parse_TYPE(outputFile);
+		id_type = parse_TYPE(outputFile);
 		break;
+
 	default:
 		t = next_token();
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -392,18 +466,23 @@ void parse_RETURNED_TYPE(FILE* outputFile)
 		back_token();
 		break;
 	}
+
+	return id_type;
 }
-void parse_PARAM_DEFINITIONS(FILE* outputFile)
+IDInfoLinkNode* parse_PARAM_DEFINITIONS		(FILE* outputFile)
 {
 	// nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
+	IDInfoLinkNode* arguments = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(PARAM_DEFINITIONS->  VAR_DEFINITIONS)\n");
-		parse_VAR_DEFINITIONS(outputFile);
+		arguments = parse_VAR_DEFINITIONS(outputFile);
 		break;
+
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(PARAM_DEFINITIONS-> EPSILON)\n");
 		break;
@@ -422,20 +501,29 @@ void parse_PARAM_DEFINITIONS(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return arguments;
 }
-void parse_STATEMENTS(FILE* outputFile)
+char*			parse_STATEMENTS			(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	char* returnedTypeOfStatement = NULL;
+	char* returnedTypeOfStatementSuffix = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_RETURN:
 	case TOKEN_ID:
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS -> STATEMENT ; STATEMENTS_SUFFIX)\n");
-		parse_STATEMENT(outputFile);
+		returnedTypeOfStatement = parse_STATEMENT(outputFile);
 		match(TOKEN_SEMICOLON);
-		parse_STATEMENTS_SUFFIX(outputFile);
+		returnedTypeOfStatementSuffix = parse_STATEMENTS_SUFFIX(outputFile);
+		if (returnedTypeOfStatementSuffix != NULL)
+			strcpy(returnedTypeOfStatement, returnedTypeOfStatementSuffix);
+		else
+			strcpy(returnedTypeOfStatement, "void");
 		break;
+
 	default:
 		t = next_token();
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -451,18 +539,19 @@ void parse_STATEMENTS(FILE* outputFile)
 		break;
 	}
 }
-void parse_STATEMENTS_SUFFIX(FILE* outputFile)
+char*			parse_STATEMENTS_SUFFIX		(FILE* outputFile)
 {
 	// nullable -done
-
 	Token* t = peekN(getCurrentToken(), 1);
+	char* returnType = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_KW_RETURN:
 	case TOKEN_ID:
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS_SUFFIX-> STATEMENTS)\n");
-		parse_STATEMENTS(outputFile);
+		returnType = parse_STATEMENTS(outputFile);
 		break;
 
 	case TOKEN_KW_END:
@@ -484,28 +573,34 @@ void parse_STATEMENTS_SUFFIX(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return returnType;
 }
-void parse_STATEMENT(FILE* outputFile)
+char*			parse_STATEMENT				(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	char* returnType = NULL;
+
 	switch (t->kind)
 	{
 
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT ->  BLOCK)\n");
-		parse_BLOCK(outputFile);
+		returnType = parse_BLOCK(outputFile); // parse_BLOCK() will return the type of value that returned from the block if any.
 		break;
 
 	case TOKEN_KW_RETURN:
 		fprintf(outputFile, "Rule(STATEMENT ->  return RETURN_SUFFIX)\n");
 		match(TOKEN_KW_RETURN);
-		parse_RETURN_SUFFIX(outputFile);
+		returnType = parse_RETURN_SUFFIX(outputFile);
 		break;
 
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(STATEMENT ->  id STATEMENT_SUFFIX)\n");
 		match(TOKEN_ID);
-		parse_STATEMENT_SUFFIX(outputFile);
+		char* id_name = getIdLexeme();
+		// TODO: check that the id already defined.
+		parse_STATEMENT_SUFFIX(outputFile,id_name);
+		// returnType is void.
 		break;
 
 	default:
@@ -522,25 +617,32 @@ void parse_STATEMENT(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return returnType;
 }
-void parse_STATEMENT_SUFFIX(FILE* outputFile)
+void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	IDInfoLinkNode* argumentsOfFunction = NULL;
+	char* leftType = NULL;
+	char* rightType = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
 		match(TOKEN_OPEN_ROUND_BRACKETS);
-		parse_PARAMETERS_LIST(outputFile);
+		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
+		checkFunctionArguments(id_name, argumentsOfFunction); // TODO: implement !!!
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
-		parse_VARIABLE_SUFFIX(outputFile);
+		leftType = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
-		parse_EXPRESSION(outputFile);
+		rightType = parse_EXPRESSION(outputFile);
+		// TODO: type checking between left and right types.
 		break;
 
 	default:
@@ -559,21 +661,23 @@ void parse_STATEMENT_SUFFIX(FILE* outputFile)
 	}
 	
 }
-void parse_RETURN_SUFFIX(FILE* outputFile)
+char* 			parse_RETURN_SUFFIX			(FILE* outputFile)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
+	char* returnType = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_INT_NUMBER:
 	case TOKEN_REAL_NUMBER:
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(RETURN_SUFFIX ->  EXPRESSION)\n");
-		parse_EXPRESSION(outputFile);
+		returnType = parse_EXPRESSION(outputFile);
 		break;
+
 	case TOKEN_SEMICOLON:
 		fprintf(outputFile, "Rule(RETURN_SUFFIX -> EPSILON)\n");
-
 		break;
 
 	default:
@@ -590,10 +694,13 @@ void parse_RETURN_SUFFIX(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return returnType;
 }
-void parse_BLOCK(FILE* outputFile)
+char*			parse_BLOCK					(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
+	char* returnedTypeOfBlock = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_CURLY_BRACKETS:
@@ -601,9 +708,12 @@ void parse_BLOCK(FILE* outputFile)
 		match(TOKEN_OPEN_CURLY_BRACKETS);
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
-		parse_STATEMENTS(outputFile);
+		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
+		if (returnedTypeOfBlock == NULL)
+			returnedTypeOfBlock = strdup("void");
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
 		break;
+
 	default:
 		t = next_token();
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -618,21 +728,26 @@ void parse_BLOCK(FILE* outputFile)
 		back_token();
 		break;
 	}
+	
+	return returnedTypeOfBlock;
 }
-void parse_PARAMETERS_LIST(FILE* outputFile)
+IDInfoLinkNode* parse_PARAMETERS_LIST		(FILE* outputFile)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
+	IDInfoLinkNode* arguments = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  VARIABLES_LIST)\n");
-		parse_VARIABLES_LIST(outputFile);
+		arguments = parse_VARIABLES_LIST(outputFile);
 		break;
+
 	case TOKEN_CLOSE_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  EPSILON)\n");
-
 		break;
+
 	default:
 		t = next_token();
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -647,36 +762,47 @@ void parse_PARAMETERS_LIST(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return arguments;
 }
-void parse_EXPRESSION(FILE* outputFile)
+char*			parse_EXPRESSION			(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
 	Token* tokenToCheck;
+	char* returnType = NULL;
 
 	switch (t->kind)
 	{
 	case TOKEN_INT_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  int_number)\n");
 		match(TOKEN_INT_NUMBER);
+		returnType = strdup("integer");
 		break;
+
 	case TOKEN_REAL_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  real_number)\n");
 		match(TOKEN_REAL_NUMBER);
+		returnType = strdup("real");
 		break;
+
 	case TOKEN_ID:
-		
 		tokenToCheck = peekN(t, 2); // looking to check what is the kind of the next token to decise how to act next.
+		
 		if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION || tokenToCheck->kind == TOKEN_ARITHMETIC_MULTIPLICATION) // checking that after id is 'ar_op'
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
 			match(TOKEN_ID);
+			char* id_name = getIdLexeme();
+			ID_Information* IDInfo = find(id_name); // TODO: check that the id is already defined.
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
-			parse_EXPRESSION(outputFile);
+			// TODO: if expression is int/real make sure to not divide by 0.
+			char* expressinType = parse_EXPRESSION(outputFile);
+			// TODO: decide what is the returnedType base on the guidelines.
 		}
 		else
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  VARIABLE)\n");
-			parse_VARIABLE(outputFile);
+			ID_Information* variableFromParse = parse_VARIABLE(outputFile);
+			returnType = get_id_type(variableFromParse);
 		}
 		break;
 
@@ -695,3 +821,7 @@ void parse_EXPRESSION(FILE* outputFile)
 		break;
 	}
 }
+
+// TODO: implement!
+void			parse_BB() {}
+void			parse_FB() {}
