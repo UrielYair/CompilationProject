@@ -16,12 +16,17 @@ void			parse_PROGRAM				(FILE* outputFile)
 	{
 	case TOKEN_KW_PROGRAM:
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
+		parse_BB();
 		//match(TOKEN_KW_PROGRAM);
+		// probably need to read all the function declarations before statements and variable definitions.
+		// while (t is not "end") -> next_token(); bla bla bla
+		//
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
 		match(TOKEN_KW_END);
 		parse_FUNC_DEFINITIONS(outputFile);
+		parse_FB();
 		break;
 	default:
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -706,11 +711,13 @@ char*			parse_BLOCK					(FILE* outputFile)
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(BLOCK -> { VAR_DEFINITIONS; STATEMENTS })\n");
 		match(TOKEN_OPEN_CURLY_BRACKETS);
+		parse_BB();
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
 		if (returnedTypeOfBlock == NULL)
 			returnedTypeOfBlock = strdup("void");
+		parse_FB();
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
 		break;
 
