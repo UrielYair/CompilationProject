@@ -39,9 +39,32 @@ IDInfoLinkNode** reverse(IDInfoLinkNode** head_ref) {
 	*head_ref = prev;
 	return head_ref;
 }
-IDInfoLinkNode** listsConcat(IDInfoLinkNode** head_list, IDInfoLinkNode** tail_list) {
-	// TODO: implement!
-	// if tail is null return list that contain only the head.
-	// check that the head is not null.
+IDInfoLinkNode* listsConcat(IDInfoLinkNode* head_list, IDInfoLinkNode* tail_list) {
+	
+	if (head_list == NULL && tail_list == NULL)
+		return NULL;
+	
+	if (head_list == NULL)
+		return tail_list;
+
+	if (tail_list == NULL)
+		return head_list;
+
+	IDInfoLinkNode* head = head_list;
+	while (head_list->next != NULL)
+		head_list = head_list->next;
+	head_list->next = tail_list;
+
+	return head;
+}
+IDInfoLinkNode* makeLink(ID_Information* ID_info) {
+	
+	IDInfoLinkNode* new_node = (struct IDInfoLinkNode*)malloc(sizeof(struct IDInfoLinkNode));
+	if (new_node != NULL)
+	{
+		new_node->data = ID_info;
+		new_node->next = NULL;
+		return new_node;
+	}
 	return NULL;
 }

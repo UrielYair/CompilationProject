@@ -10,6 +10,7 @@ typedef struct IDInfoLinkNode
 
 IDInfoLinkNode** push(IDInfoLinkNode** head_ref, ID_Information* ID_to_dd);
 IDInfoLinkNode** reverse(IDInfoLinkNode** head_ref);
-IDInfoLinkNode** listsConcat(IDInfoLinkNode** head_list, IDInfoLinkNode** tail_list);
+IDInfoLinkNode* listsConcat(IDInfoLinkNode* head_list, IDInfoLinkNode* tail_list);
+IDInfoLinkNode* makeLink(ID_Information* ID_info);
 
 #endif
