@@ -23,6 +23,9 @@ char*			parse_RETURN_SUFFIX(FILE* outputFile);
 char*			parse_BLOCK(FILE* outputFile);
 IDInfoLinkNode* parse_PARAMETERS_LIST(FILE* outputFile);
 char*			parse_EXPRESSION(FILE* outputFile);
+
+void			getAllFuctionDeclared(FILE* outputFile);
+
 void			parse_BB();
 void			parse_FB();
 

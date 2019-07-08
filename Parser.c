@@ -11,22 +11,33 @@
 void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
+	parse_BB();
 
 	switch (t->kind)
 	{
 	case TOKEN_KW_PROGRAM:
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
-		parse_BB();
-		//match(TOKEN_KW_PROGRAM);
-		// probably need to read all the function declarations before statements and variable definitions.
-		// while (t is not "end") -> next_token(); bla bla bla
-		//
+		
+		/*
+			In order to get all the functions declared in the global scope,
+			The program will skip right to function declaration area in the input.
+			and then save them in the symbols table.
+			After that, the program will get back to the first token after the keyword "program".
+		*/ 
+		getAllFuctionDeclared(outputFile);
+		// The scanner is now on the "program" token again.
+
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
 		match(TOKEN_KW_END);
-		parse_FUNC_DEFINITIONS(outputFile);
-		parse_FB();
+		// parse_FUNC_DEFINITIONS(outputFile);   // already parsed in the begining.
+		
+		// Skipping function declarations area:
+		while (t->kind != TOKEN_END_OF_FILE)
+			t = next_token();
+		back_token();
+
 		break;
 	default:
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
@@ -38,6 +49,8 @@ void			parse_PROGRAM				(FILE* outputFile)
 		back_token();
 		break;
 	}
+
+	parse_FB();
 }
 
 /* This function will return linked list of all the ID's that discovered durring derivation of the input.*/
@@ -193,7 +206,7 @@ IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		headNode = parse_VARIABLE(outputFile, id_type);
-		// TODO: make node to be link
+		headOfIDsList = makeLink(headNode);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
@@ -230,7 +243,7 @@ IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
 		IDInfo = parse_VARIABLE(outputFile, id_type);
-		// TODO: make IDInfo to be head link of the list.
+		headOfIDsList = makeLink(IDInfo);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
@@ -828,7 +841,25 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		break;
 	}
 }
+void			getAllFuctionDeclared(FILE* outputFile) {
 
-// TODO: implement!
-void			parse_BB() {}
-void			parse_FB() {}
+	Token* t = getCurrentToken();
+
+	// skipping forward untill "end" keyword:
+	while (t->kind != TOKEN_KW_END)
+		t = next_token();
+
+	parse_FUNC_DEFINITIONS(outputFile);
+
+	// skipping backward untill "program" keyword:
+	while (t->kind != TOKEN_KW_PROGRAM)
+		t = back_token();
+}
+
+void			parse_BB() {
+	make_table();
+}
+void			parse_FB() {
+	wereAllIDsUsed();
+	pop_table();
+}
