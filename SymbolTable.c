@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "HashTable.c"
 #include <string.h>
 #include <stdlib.h>
 
@@ -54,8 +55,6 @@ ID_Information* find(char* id_name) {
 
 }
 
-
-// TODO: keep editing !!!
 void set_id_type(ID_Information* id_entry, char* id_type) {
 	id_entry->name = strdup(id_type);
 }
@@ -69,14 +68,31 @@ void free_ID_info(ID_Information* id_entry) {
 	// TODO: Implement!!
 }
 
+bool wereAllIDsUsed () 
+{ 
+	bool everyIDWasInUse = true;
+	int counterOfIDsWhichNotUsed = 0;
 
-/*
-functions from hash table for reference.
+	// Iterate through existing hash table.
+	for (int i = 0; i < currentTable->currentSymbolTable->size; i++) 
+	{
+		ht_item* item = currentTable->currentSymbolTable->items[i];
+		if (item != NULL && item != &HT_DELETED_ITEM) 
+		{
+			ID_Information* currentID = item->value;
+			if (currentID->wasUsed == false)
+			{
+				everyIDWasInUse = false;
+				printf("The ID: %s wasn't in use in the current scope.\n", currentID->name);
+				counterOfIDsWhichNotUsed++;
+			}
+		}
+	}
 
-ht_hash_table*	ht_new();
-void			ht_del_hash_table(ht_hash_table* ht);
+	if (everyIDWasInUse)
+		printf("All the ID's were used.\n");
+	else
+		printf("%u ID's wasn't in use.\n", counterOfIDsWhichNotUsed);
 
-void			ht_insert(ht_hash_table* ht, const char* key, const ID_Information* value);
-ID_Information* ht_search(ht_hash_table* ht, const char* key);
-void			ht_delete(ht_hash_table* h, const char* key);
-*/
+	return everyIDWasInUse;
+}
