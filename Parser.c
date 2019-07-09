@@ -206,6 +206,7 @@ IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		headNode = parse_VARIABLE(outputFile, id_type);
+		set_id_info(headNode, "ID_Type", id_type);
 		headOfIDsList = makeLink(headNode);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
@@ -243,6 +244,7 @@ IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
 		IDInfo = parse_VARIABLE(outputFile, id_type);
+		set_id_info(IDInfo, "ID_Type", id_type);
 		headOfIDsList = makeLink(IDInfo);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
@@ -280,14 +282,20 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLE ->  id VARIABLE_SUFFIX)\n");
-		match(TOKEN_ID);
-
-		id_name = getIdLexeme();
-		insert(id_name);	// will automatically check if alraedy exist in the symbol table or not.
-		// TODO: update attribute of id to be of id_type that get from the argument.
 		
-		parse_VARIABLE_SUFFIX(outputFile, id_name);		// if parse_VARIABLE_SUFFIX() will find that the id is an 
-														// array, it will update the entry in the symbol table.
+		match(TOKEN_ID);
+		id_name = getIdLexeme();
+		insert(id_name);
+		set_id_info(lookup(id_name), "functionOrVariable", "variable");
+		
+		int arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		if (arraySize <= 0)
+			printf("Array size can not be a negative or zero.\n");
+		else if (arraySize > 0)
+		{
+			set_id_info(lookup(id_name), "isArray", true);			// set id as array.
+			set_id_info(lookup(id_name), "sizeOfArray", arraySize);	// set array size.
+		}
 		new_id = find(id_name);
 		break;
 
@@ -307,11 +315,12 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 	}
 	return new_id;
 }
-char*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
+int				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
 	char* variableType = NULL;
+	int numberInsideBrackets = 0; // 0 will indicate problems during deriving variable_suffix.
 
 	switch (t->kind)
 	{
@@ -319,12 +328,9 @@ char*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
 		if (match(TOKEN_INT_NUMBER))
-			printf("hi!");	// delete it after implementing the TODO.
-			// TODO: set the id to be an array and set its size, 
-			//       check that the size makes sense and not negative. 
-			//		 (if the id is already an array, validate the index to be in the baundaries.)
+			numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
+																	// validate the index to be in the baundaries of the array.
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
-		variableType = get_id_type(find(getIdLexeme(id_name))); // TODO: check.
 		break;
 
 	case TOKEN_SEMICOLON:
@@ -348,7 +354,7 @@ char*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 		back_token();
 		break;
 	}
-
+	return numberInsideBrackets;
 }
 void			parse_FUNC_DEFINITIONS		(FILE* outputFile)
 {
@@ -413,7 +419,8 @@ void			parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 void			parse_FUNC_DEFINITION		(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
-	char* id_type = NULL;
+	char* returnedTypeOfID = NULL;
+	char* id_name = NULL;
 	IDInfoLinkNode* argumentsOfFunction = NULL;
 	char* returnedTypeOfBlock = NULL;
 
@@ -423,17 +430,26 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(FUNC_DEFINITION -> RETURNED_TYPE id ( PARAM_DEFINITIONS ) BLOCK)\n");
-		id_type = parse_RETURNED_TYPE(outputFile);
-		match(TOKEN_ID);
-		// TODO: insert and validation.
-		// TODO: set_id with id_type and make it function type.
+		returnedTypeOfID = parse_RETURNED_TYPE(outputFile);
+		if (match(TOKEN_ID))
+		{
+			id_name = getCurrentToken()->lexeme;
+			insert(id_name);
+			set_id_info(find(id_name), "functionOrVariable", "function");	// set id to function type.
+			set_id_info(find(id_name), "returnedType", returnedTypeOfID);	// set returned type of the function.
+		}
+		
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
-		// TODO: set_id with list of arguments.
+		set_id_info(find(id_name), "listOfArguments", argumentsOfFunction);
+		set_id_info(find(id_name), "numOfArguments", count(argumentsOfFunction)); // TODO: implement count.
+		
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
-		if (strcmp(id_type, returnedTypeOfBlock) != 0)
-			printf("not good!"); // TODO: change the error messege to a meaningful one
+		
+		if (strcmp(returnedTypeOfID, returnedTypeOfBlock) != 0)
+			printf("The block that end in line %u return %s value while it should return %s.\n", 
+				getCurrentToken()->lineNumber ,returnedTypeOfBlock , returnedTypeOfID);
 		break;
 
 	default:
@@ -526,7 +542,8 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 	Token* t = peekN(getCurrentToken(), 1);
 	char* returnedTypeOfStatement = NULL;
 	char* returnedTypeOfStatementSuffix = NULL;
-
+	char* returnedValueType = NULL;
+	
 	switch (t->kind)
 	{
 	case TOKEN_KW_RETURN:
@@ -534,12 +551,36 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS -> STATEMENT ; STATEMENTS_SUFFIX)\n");
 		returnedTypeOfStatement = parse_STATEMENT(outputFile);
+		
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfStatementSuffix = parse_STATEMENTS_SUFFIX(outputFile);
-		if (returnedTypeOfStatementSuffix != NULL)
-			strcpy(returnedTypeOfStatement, returnedTypeOfStatementSuffix);
+		
+		/* 
+		The program needs to decide what was the returned value type.
+		In addition, the program need to check whether return statement does return a value and what it's his type.
+
+		the following commands will check if there were a return statement with value and return the type of the value.
+		*/
+		if (returnedTypeOfStatementSuffix == NULL)
+			strcpy(returnedValueType, returnedTypeOfStatement);
 		else
-			strcpy(returnedTypeOfStatement, "void");
+		{
+			if (strcmp(returnedTypeOfStatement, "void") == 0 &&
+				strcmp(returnedTypeOfStatementSuffix, "void") != 0)
+				strcpy(returnedValueType, returnedTypeOfStatementSuffix);
+
+			else if (strcmp(returnedTypeOfStatement, "void") != 0 &&
+				strcmp(returnedTypeOfStatementSuffix, "void") == 0)
+				strcpy(returnedValueType, returnedTypeOfStatement);
+
+			else if (strcmp(returnedTypeOfStatement, "void") == 0 &&
+				strcmp(returnedTypeOfStatementSuffix, "void") == 0)
+				strcpy(returnedValueType, "void");
+
+			else
+				strcpy(returnedValueType, returnedTypeOfStatementSuffix);
+		}
+
 		break;
 
 	default:
@@ -556,6 +597,7 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return returnedValueType;
 }
 char*			parse_STATEMENTS_SUFFIX		(FILE* outputFile)
 {
@@ -603,7 +645,7 @@ char*			parse_STATEMENT				(FILE* outputFile)
 
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT ->  BLOCK)\n");
-		returnType = parse_BLOCK(outputFile); // parse_BLOCK() will return the type of value that returned from the block if any.
+		returnType = parse_BLOCK(outputFile);
 		break;
 
 	case TOKEN_KW_RETURN:
@@ -616,9 +658,8 @@ char*			parse_STATEMENT				(FILE* outputFile)
 		fprintf(outputFile, "Rule(STATEMENT ->  id STATEMENT_SUFFIX)\n");
 		match(TOKEN_ID);
 		char* id_name = getIdLexeme();
-		// TODO: check that the id already defined.
 		parse_STATEMENT_SUFFIX(outputFile,id_name);
-		// returnType is void.
+		strcpy(returnType, "void");
 		break;
 
 	default:
@@ -643,12 +684,17 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 	IDInfoLinkNode* argumentsOfFunction = NULL;
 	char* leftType = NULL;
 	char* rightType = NULL;
+	ID_Information* idToCheck = find(id_name);
+	checkIfIDAlreadyDeclared(id_name);
 
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_ROUND_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
 		match(TOKEN_OPEN_ROUND_BRACKETS);
+		if (!isFunction(id_name))
+			printf("The id: %s is not a function, therefor calling to function on line %u is forbidden.", 
+				id_name, getCurrentToken()->lineNumber);
 		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		checkFunctionArguments(id_name, argumentsOfFunction); // TODO: implement !!!
@@ -657,10 +703,15 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
-		leftType = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		leftType = idToCheck->ID_Type;
+		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		// TODO: check if ParseVariableSuffix return something, if it does check that the id is an array
+		if(idToCheck->isArray)
+			checkBoundaries(indexInArray, idToCheck->sizeOfArray);						// TODO: implement check boundaries.
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
+		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
-		// TODO: type checking between left and right types.
+		assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment);	// TODO: implement type checking of assighnments.
 		break;
 
 	default:
@@ -812,10 +863,11 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
 			match(TOKEN_ID);
 			char* id_name = getIdLexeme();
-			ID_Information* IDInfo = find(id_name); // TODO: check that the id is already defined.
+			checkIfIDAlreadyDeclared(id_name);
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
-			// TODO: if expression is int/real make sure to not divide by 0.
 			char* expressinType = parse_EXPRESSION(outputFile);
+			if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION)
+				printf(""); // TODO: if expression is int/real make sure to not divide by 0.
 			// TODO: decide what is the returnedType base on the guidelines.
 		}
 		else

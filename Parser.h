@@ -9,7 +9,7 @@ char*			parse_TYPE(FILE* outputFile);
 IDInfoLinkNode* parse_VARIABLES_LIST(FILE* outputFile, char* id_type);
 IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX(FILE* outputFile, char* id_type);
 ID_Information* parse_VARIABLE(FILE* outputFile);
-char*			parse_VARIABLE_SUFFIX(FILE* outputFile, char* id_name);
+int				parse_VARIABLE_SUFFIX(FILE* outputFile, char* id_name);
 void			parse_FUNC_DEFINITIONS(FILE* outputFile);
 void			parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile);
 void			parse_FUNC_DEFINITION(FILE* outputFile);
