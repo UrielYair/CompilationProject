@@ -33,9 +33,8 @@ static ht_item* ht_new_item(const char* k, const ID_Information* v) {
  * Deletes the ht_item i
  */
 static void ht_del_item(ht_item* i) {
-	// TODO: maybe edit will be needed.
 	free(i->key);
-	free(i->value);
+	delete_ID_Information(i->value); // free(i->value); 
 	free(i);
 }
 
