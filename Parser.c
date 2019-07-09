@@ -1,7 +1,7 @@
 ﻿#include "Token.h"
 #include "Parser.h"
 #include "SymbolTable.h"
-#include "IDInfoLinkedList.h"
+#include "slist.h"
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -50,12 +50,11 @@ void			parse_PROGRAM				(FILE* outputFile)
 
 	parse_FB();
 }
-
 /* This function will return linked list of all the ID's that discovered durring derivation of the input.*/
-IDInfoLinkNode* parse_VAR_DEFINITIONS		(FILE* outputFile)
+slist*			parse_VAR_DEFINITIONS		(FILE* outputFile)
 {
-	IDInfoLinkNode* headOfIdsList = NULL;
-	IDInfoLinkNode* tailOfIDsList = NULL;
+	slist* headOfIdsList = NULL;
+	slist* tailOfIDsList = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
 
 	switch (t->kind)
@@ -66,7 +65,7 @@ IDInfoLinkNode* parse_VAR_DEFINITIONS		(FILE* outputFile)
 		headOfIdsList = parse_VAR_DEFINITION(outputFile);			// parse_VAR_DEFINITION() will return only one ID_Information.
 		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile);	// parse_VAR_DEFINITIONS_SUFFIX() will return list of ID's with their info.
 		if (tailOfIDsList != NULL)
-			headOfIdsList = listsConcat(headOfIdsList, tailOfIDsList);
+			headOfIdsList = slistsConcat(headOfIdsList, tailOfIDsList);
 		break;
 	default:
 		t = next_token();
@@ -84,10 +83,10 @@ IDInfoLinkNode* parse_VAR_DEFINITIONS		(FILE* outputFile)
 	}
 	return headOfIdsList;
 }
-IDInfoLinkNode* parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
+slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 {
 	// nullable - done
-	IDInfoLinkNode* listOfIDsToReturn = NULL;
+	slist* listOfIDsToReturn = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
 	
 	switch (t->kind)
@@ -128,9 +127,9 @@ IDInfoLinkNode* parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 	return listOfIDsToReturn;
 }
 /* This function will return list of ID's of the same type. */
-IDInfoLinkNode* parse_VAR_DEFINITION		(FILE* outputFile)
+slist*			parse_VAR_DEFINITION		(FILE* outputFile)
 {
-	IDInfoLinkNode* listOfIDs = NULL;
+	slist* listOfIDs = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
 
 	switch (t->kind)
@@ -192,10 +191,10 @@ char*			parse_TYPE					(FILE* outputFile)
 	}
 	return typeOfID;
 }
-IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
+slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 {
-	IDInfoLinkNode* headOfIDsList = NULL;
-	IDInfoLinkNode* tailOfIDsList = NULL;
+	slist* headOfIDsList = NULL;
+	slist* tailOfIDsList = NULL;
 	ID_Information* headNode = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
 	
@@ -205,10 +204,10 @@ IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		headNode = parse_VARIABLE(outputFile, id_type);
 		set_id_info(headNode, "ID_Type", id_type);
-		headOfIDsList = makeLink(headNode);
+		headOfIDsList = snode_create(headNode);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
-			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
+			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
 	default:
@@ -227,13 +226,12 @@ IDInfoLinkNode* parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 	}
 	return headOfIDsList;
 }
-IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
+slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 {
-	//TODO: check if reverse list is needed.
 	// nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
-	IDInfoLinkNode* headOfIDsList = NULL;
-	IDInfoLinkNode* tailOfIDsList = NULL;
+	slist* headOfIDsList = NULL;
+	slist* tailOfIDsList = NULL;
 	ID_Information* IDInfo = NULL;
 
 	switch (t->kind)
@@ -243,10 +241,10 @@ IDInfoLinkNode* parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 		match(TOKEN_COMMA);
 		IDInfo = parse_VARIABLE(outputFile, id_type);
 		set_id_info(IDInfo, "ID_Type", id_type);
-		headOfIDsList = makeLink(IDInfo);
+		headOfIDsList = snode_create(IDInfo);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
-			headOfIDsList = listsConcat(headOfIDsList, tailOfIDsList);
+			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
 	case TOKEN_SEMICOLON:
@@ -313,7 +311,7 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 	}
 	return new_id;
 }
-int*				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
+int*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
@@ -431,7 +429,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 	Token* t = peekN(getCurrentToken(), 1);
 	char* returnedTypeOfID = NULL;
 	char* id_name = NULL;
-	IDInfoLinkNode* argumentsOfFunction = NULL;
+	slist* argumentsOfFunction = NULL;
 	char* returnedTypeOfBlock = NULL;
 
 	switch (t->kind)
@@ -452,7 +450,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
 		set_id_info(find(id_name), "listOfArguments", argumentsOfFunction);
-		set_id_info(find(id_name), "numOfArguments", count(argumentsOfFunction)); // TODO: implement count.
+		set_id_info(find(id_name), "numOfArguments", argumentsOfFunction->count);
 		
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
@@ -513,11 +511,11 @@ char*			parse_RETURNED_TYPE			(FILE* outputFile)
 
 	return id_type;
 }
-IDInfoLinkNode* parse_PARAM_DEFINITIONS		(FILE* outputFile)
+slist*			parse_PARAM_DEFINITIONS		(FILE* outputFile)
 {
 	// nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
-	IDInfoLinkNode* arguments = NULL;
+	slist* arguments = NULL;
 
 	switch (t->kind)
 	{
@@ -691,7 +689,7 @@ char*			parse_STATEMENT				(FILE* outputFile)
 void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	Token* t = peekN(getCurrentToken(), 1);
-	IDInfoLinkNode* argumentsOfFunction = NULL;
+	slist* argumentsOfFunction = NULL;
 	char* leftType = NULL;
 	char* rightType = NULL;
 	ID_Information* idToCheck = find(id_name);
@@ -707,7 +705,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 				id_name, getCurrentToken()->lineNumber);
 		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
-		checkFunctionArguments(id_name, argumentsOfFunction); // TODO: implement !!!
+		checkFunctionArguments(id_name, argumentsOfFunction);								// TODO: implement function argument checking !!!
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
@@ -727,7 +725,8 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
 		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
-		assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment);	// TODO: implement type checking of assighnments.
+		assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment);			// TODO: implement type checking of assighnments.
+																							// TODO: update id (left of the assighnment) to error_type if needed.
 		break;
 
 	default:
@@ -818,11 +817,11 @@ char*			parse_BLOCK					(FILE* outputFile)
 	
 	return returnedTypeOfBlock;
 }
-IDInfoLinkNode* parse_PARAMETERS_LIST		(FILE* outputFile)
+slist*			parse_PARAMETERS_LIST		(FILE* outputFile)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
-	IDInfoLinkNode* arguments = NULL;
+	slist* arguments = NULL;
 
 	switch (t->kind)
 	{
@@ -881,10 +880,10 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			char* id_name = getIdLexeme();
 			checkIfIDAlreadyDeclared(id_name);
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
-			char* expressinType = parse_EXPRESSION(outputFile);
+			char* expressionType = parse_EXPRESSION(outputFile);
 			if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION)
-				printf(""); // TODO: if expression is int/real make sure to not divide by 0.
-			// TODO: decide what is the returnedType base on the guidelines.
+				printf("");																	// TODO: if expression is int/real make sure to not divide by 0.
+			returnType = arithmeticTypeChecking(find(id_name)->ID_Type, expressionType);	// TODO: decide what is the returnedType base on the guidelines.
 		}
 		else
 		{
@@ -909,7 +908,7 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		break;
 	}
 }
-void			getAllFuctionDeclared(FILE* outputFile) {
+void			getAllFuctionDeclared		(FILE* outputFile) {
 
 	Token* t = getCurrentToken();
 
