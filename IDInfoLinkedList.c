@@ -24,6 +24,7 @@ IDInfoLinkNode** push(IDInfoLinkNode** head_ref, ID_Information* ID_to_dd)
 
 	return head_ref;
 }
+
 IDInfoLinkNode** reverse(IDInfoLinkNode** head_ref) {
 	struct IDInfoLinkNode* prev = NULL;
 	struct IDInfoLinkNode* current = *head_ref;
@@ -39,6 +40,7 @@ IDInfoLinkNode** reverse(IDInfoLinkNode** head_ref) {
 	*head_ref = prev;
 	return head_ref;
 }
+
 IDInfoLinkNode* listsConcat(IDInfoLinkNode* head_list, IDInfoLinkNode* tail_list) {
 	
 	if (head_list == NULL && tail_list == NULL)
@@ -57,8 +59,8 @@ IDInfoLinkNode* listsConcat(IDInfoLinkNode* head_list, IDInfoLinkNode* tail_list
 
 	return head;
 }
+
 IDInfoLinkNode* makeLink(ID_Information* ID_info) {
-	
 	IDInfoLinkNode* new_node = (struct IDInfoLinkNode*)malloc(sizeof(struct IDInfoLinkNode));
 	if (new_node != NULL)
 	{

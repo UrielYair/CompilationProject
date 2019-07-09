@@ -197,8 +197,8 @@ unsigned int slist_get_count(const slist* list)
 	return list->count;
 }
 
+//EXAMPLE PROGRAM:
 /*
-EXAMPLE PROGRAM:
 
 #include <stdio.h>
 #include <string.h>

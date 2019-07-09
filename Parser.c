@@ -6,8 +6,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// TODO: after any match(TOKEN_ID); add insert() and validation.
-
 void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
@@ -315,12 +313,12 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 	}
 	return new_id;
 }
-int				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
+int*				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
 	char* variableType = NULL;
-	int numberInsideBrackets = 0; // 0 will indicate problems during deriving variable_suffix.
+	int* numberInsideBrackets = NULL; // 0 will indicate problems during deriving variable_suffix.
 
 	switch (t->kind)
 	{
@@ -328,8 +326,20 @@ int				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
 		if (match(TOKEN_INT_NUMBER))
-			numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
+		{
+			*numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
 																	// validate the index to be in the baundaries of the array.
+			if (*numberInsideBrackets <= 0)
+			{
+				printf("Number inside bracket must be a positive integer (line: %u).\n", getCurrentToken()->lineNumber);
+				*numberInsideBrackets = 0;
+
+			}
+		}
+		else
+		{
+			printf("Number inside bracket must be an integer (line: %u).\n", getCurrentToken()->lineNumber);
+		}
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
 		break;
 
@@ -704,10 +714,16 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
 		leftType = idToCheck->ID_Type;
-		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
-		// TODO: check if ParseVariableSuffix return something, if it does check that the id is an array
-		if(idToCheck->isArray)
-			checkBoundaries(indexInArray, idToCheck->sizeOfArray);						// TODO: implement check boundaries.
+		int* indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		
+		if (indexInArray != NULL)
+		{
+			if (idToCheck->isArray)
+				checkBoundaries(*indexInArray, idToCheck->sizeOfArray);						// TODO: implement check boundaries.
+			else
+				printf("The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
+		}
+
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
 		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);

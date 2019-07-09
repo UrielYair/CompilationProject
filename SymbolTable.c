@@ -65,7 +65,8 @@ void delete_ID_Information(ID_Information* idToDelete) {
 
 ID_Information* insert(char* id_name) {
 	ID_Information* info = lookup(id_name);
-	if (info != NULL) // TODO: add error printing.
+	if (info != NULL) 
+		printf("The id (%s) is already defined. - line: %u.\n", id_name, getCurrentToken()->lineNumber);
 		return NULL;
 	info = new_ID_Information(id_name);
 	ht_insert(currentTable->currentSymbolTable, id_name, info);
@@ -73,7 +74,6 @@ ID_Information* insert(char* id_name) {
 }
 
 ID_Information* lookup(char* id_name) {
-	// TODO: maybe error printing is needed.
 	return ht_search(currentTable->currentSymbolTable, id_name);
 }
 
@@ -176,6 +176,8 @@ bool isIDExistInSymbolTable(char* id_name) {
 void checkIfIDAlreadyDeclared(char* id_name) {
 	if (!isIDExistInSymbolTable(id_name))
 		printf("The ID: %s in line %u must be declared before being used.\n", id_name, getCurrentToken()->lineNumber);
+	else
+		set_id_info(find(id_name),"wasUsed",true);
 }
 
 bool isFunction(char* id_name) {

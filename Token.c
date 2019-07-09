@@ -290,6 +290,5 @@ Node* getFirstNode()
 }
 
 char* getIdLexeme() {
-	// TODO: implement
 	return getCurrentToken()->lexeme;
 }
