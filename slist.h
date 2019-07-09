@@ -16,6 +16,7 @@ typedef struct slist slist;
 
 typedef void (*slist_forfn)(void*);
 
+static snode* snode_create(void* data);
 slist* slist_create(void);
 void slist_empty(slist* list);
 void slist_delete(slist* list);

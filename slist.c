@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "slist.h"
+#include "SymbolTable.h"
 
 static snode* snode_create(void* data)
 {
@@ -31,6 +32,7 @@ void slist_empty(slist* list)
 	node = list->head;
 	while (node != NULL) {
 		temp = node->next;
+		delete_ID_Information((ID_Information*)node->data);
 		free(node);
 		node = temp;
 	}
@@ -195,6 +197,22 @@ void slist_for_each(const slist* list, slist_forfn fun)
 unsigned int slist_get_count(const slist* list)
 {
 	return list->count;
+}
+
+void* slistsConcat(slist* headList, slist* tailList) {
+	if (headList == NULL && tailList == NULL)
+		return NULL;
+
+	if (headList == NULL)
+		return tailList;
+
+	if (tailList == NULL)
+		return headList;
+
+	headList->tail->next = tailList->head;
+	headList->tail = tailList->tail;
+
+	return headList;
 }
 
 //EXAMPLE PROGRAM:
