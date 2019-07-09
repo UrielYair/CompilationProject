@@ -1,12 +1,12 @@
 #include "SymbolTable.h"
 #include "HashTable.c"
 #include "Token.h"
+#include "slist.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-// TODO: check if allocation successeded. (malloc/calloc/realloc)
-// TODO: add free function wherever allocation be done.	
+// TODO: remember to free memory in the end.	
 
 SymbolTable* currentTable = NULL;
 
@@ -53,8 +53,7 @@ void delete_ID_Information(ID_Information* idToDelete) {
 	if (strcmp(idToDelete->functionOrVariable, "function") == 0)
 	{
 		free(idToDelete->returnedType);
-		// TODO: call delete list.
-		//idToDelete->listOfArguments
+		slist_delete(idToDelete->listOfArguments);
 		free(idToDelete->listOfArguments);
 	}
 	free(idToDelete->functionOrVariable);
@@ -78,7 +77,6 @@ ID_Information* lookup(char* id_name) {
 }
 
 ID_Information* find(char* id_name) {
-	// TODO: maybe error printing is needed.
 	SymbolTable* tempSymbolTableToCheck = currentTable;
 	while (tempSymbolTableToCheck != NULL)
 	{
