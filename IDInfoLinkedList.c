@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include "SymbolTable.h"
 
-/* A linked list IDInfoLinkNode */
-typedef struct IDInfoLinkNode
-{
-	ID_Information* data;
-	struct IDInfoLinkNode* next;
-} IDInfoLinkNode;
 
 /* Function to add a IDInfoLinkNode at the beginning of Linked List.
    This function expects a pointer to the data to be added. */
