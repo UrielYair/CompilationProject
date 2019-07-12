@@ -52,4 +52,13 @@ void delete_ID_Information(ID_Information* idToDelete);
 	void checkIfIDAlreadyDeclared(char* id_name);
 	bool isFunction(char* id_name);
 
+	// helpers methods:
+
+	void	checkFunctionArguments(char* id_name, slist* argumentsOfFunction);
+	bool	isAValueCanHoldBValue(ID_Information* A, ID_Information* B);
+	bool	checkBoundaries(int indexInArray, int sizeOfArray);
+	bool	assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment)
+	char*	arithmeticTypeChecking(char* operandA, char* operandB);
+
+
 #endif  // SYMBOL_TABLE_H
