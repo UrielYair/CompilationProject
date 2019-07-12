@@ -29,5 +29,6 @@ void slist_insert_before(slist* list, snode* node, snode* previous, void* data);
 snode* slist_insert_after(slist* list, snode* node, void* data);
 void slist_for_each(const slist* list, slist_forfn fun);
 unsigned int slist_get_count(const slist* list);
+void* slistsConcat(slist* headList, slist* tailList);
 
 #endif /* SLIST_H */
