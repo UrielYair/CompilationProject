@@ -1,37 +1,14 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-#include "HashTable.h"
-#include "IDInfoLinkedList.h"
-#include <stdbool.h>
+
+#include "ht_hash_table.h"
+
 
 typedef struct SymbolTable {
-
-	SymbolTable* father;
+	struct SymbolTable* father;
 	ht_hash_table* currentSymbolTable;
-
 } SymbolTable;
-
-typedef struct ID_Information {
-
-	char* name;
-	char* functionOrVariable;		// function, variable
-	bool wasUsed;
-
-	//ID_Information - variables
-	char* ID_Type;					// real, integer
-	int sizeOfArray;				// in case of array.
-	bool isArray;
-	
-	//ID_Information - functions declaration
-	char* returnedType;				// real, integer, void
-	int numOfArguments;
-	struct IDInfoLinkNode* listOfArguments;
-
-} ID_Information;
-
-ID_Information* new_ID_Information(char* name);
-void delete_ID_Information(ID_Information* idToDelete);
 
 
 //	*******************   functions   *******************
@@ -44,21 +21,8 @@ void delete_ID_Information(ID_Information* idToDelete);
 	void			set_id_info(ID_Information* id_entry, char* whatToUpdate, void* value);
 	char*			get_id_type(ID_Information* id_entry);
 	
-	ID_Information* new_ID_Information(char* name);
-	void delete_ID_Information(ID_Information* idToDelete);
-	bool			wereAllIDsUsed();
-	
+		
 	bool isIDExistInSymbolTable(char* id_name);
 	void checkIfIDAlreadyDeclared(char* id_name);
-	bool isFunction(char* id_name);
-
-	// helpers methods:
-
-	void	checkFunctionArguments(char* id_name, slist* argumentsOfFunction);
-	bool	isAValueCanHoldBValue(ID_Information* A, ID_Information* B);
-	bool	checkBoundaries(int indexInArray, int sizeOfArray);
-	bool	assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment)
-	char*	arithmeticTypeChecking(char* operandA, char* operandB);
-
-
+	
 #endif  // SYMBOL_TABLE_H
