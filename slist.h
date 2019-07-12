@@ -1,22 +1,21 @@
 #ifndef SLIST_H
 #define SLIST_H
 
-struct snode {
+typedef struct snode {
 	void* data;
 	struct snode* next;
-};
-typedef struct snode snode;
+}snode;
 
-struct slist {
+typedef struct slist {
 	snode* head;
 	snode* tail;
 	unsigned int count;
-};
-typedef struct slist slist;
+}slist;
+
 
 typedef void (*slist_forfn)(void*);
 
-static snode* snode_create(void* data);
+//static snode* snode_create(void* data);
 slist* slist_create(void);
 void slist_empty(slist* list);
 void slist_delete(slist* list);

@@ -1,11 +1,10 @@
 #include <stdlib.h>
-
-#include "slist.h"
 #include "SymbolTable.h"
+#include "slist.h"
 
 static snode* snode_create(void* data)
 {
-	snode* node = malloc(sizeof(snode));
+	snode* node = (snode*)malloc(sizeof(snode));
 	if (node) {
 		node->data = data;
 		node->next = NULL;
