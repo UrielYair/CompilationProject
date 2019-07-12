@@ -282,7 +282,7 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 		match(TOKEN_ID);
 		id_name = getIdLexeme();
 		insert(id_name);
-		set_id_info(lookup(id_name), "functionOrVariable", "variable");
+		set_id_info(find(id_name), "functionOrVariable", "variable");
 		
 		int arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		if (arraySize <= 0)
@@ -705,7 +705,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 				id_name, getCurrentToken()->lineNumber);
 		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
-		checkFunctionArguments(id_name, argumentsOfFunction);								// TODO: implement function argument checking !!!
+		checkFunctionArguments(id_name, argumentsOfFunction);
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
@@ -717,7 +717,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		if (indexInArray != NULL)
 		{
 			if (idToCheck->isArray)
-				checkBoundaries(*indexInArray, idToCheck->sizeOfArray);						// TODO: implement check boundaries.
+				checkBoundaries(*indexInArray, idToCheck->sizeOfArray);
 			else
 				printf("The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
 		}
@@ -725,8 +725,9 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
 		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
-		assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment);			// TODO: implement type checking of assighnments.
-																							// TODO: update id (left of the assighnment) to error_type if needed.
+		if (assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment))
+			set_id_info(idToCheck, "ID_Type", "error_type");
+
 		break;
 
 	default:
@@ -827,7 +828,7 @@ slist*			parse_PARAMETERS_LIST		(FILE* outputFile)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  VARIABLES_LIST)\n");
-		arguments = parse_VARIABLES_LIST(outputFile);
+		arguments = parse_VARIABLES_LIST(outputFile,"");
 		break;
 
 	case TOKEN_CLOSE_ROUND_BRACKETS:
@@ -881,9 +882,8 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			checkIfIDAlreadyDeclared(id_name);
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
 			char* expressionType = parse_EXPRESSION(outputFile);
-			if (tokenToCheck->kind == TOKEN_ARITHMETIC_DIVISION)
-				printf("");																	// TODO: if expression is int/real make sure to not divide by 0.
-			returnType = arithmeticTypeChecking(find(id_name)->ID_Type, expressionType);	// TODO: decide what is the returnedType base on the guidelines.
+			
+			returnType = arithmeticTypeChecking(find(id_name)->ID_Type, expressionType);
 		}
 		else
 		{
