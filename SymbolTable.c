@@ -37,7 +37,7 @@ ID_Information* insert(char* id_name) {
 	ID_Information* info = lookup(id_name);
 	if (info != NULL)
 	{
-		printf("The id (%s) is already defined. - line: %u.\n", id_name, getCurrentToken()->lineNumber);
+		fprintf(semanticOutput, "The id (%s) is already defined. - line: %u.\n", id_name, getCurrentToken()->lineNumber);
 		return NULL;
 	}
 	info = new_ID_Information(id_name);
@@ -66,7 +66,7 @@ void set_id_info_pointer(ID_Information * id_entry, char* whatToUpdate, void* va
 
 	if (id_entry == NULL)
 	{
-		printf("No id_entry to set.\n");
+		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -91,14 +91,14 @@ void set_id_info_pointer(ID_Information * id_entry, char* whatToUpdate, void* va
 		id_entry->listOfArguments = (struct slist*)value;
 
 	else
-		printf("member not found for the set request.\n");
+		fprintf(semanticOutput, "member not found for the set request.\n");
 
 }
 void set_id_info_boolean(ID_Information* id_entry, char* whatToUpdate, bool value) {
 
 	if (id_entry == NULL)
 	{
-		printf("No id_entry to set.\n");
+		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -111,13 +111,13 @@ void set_id_info_boolean(ID_Information* id_entry, char* whatToUpdate, bool valu
 		id_entry->isArray = value;
 
 	else
-		printf("member not found for the set request.\n");
+		fprintf(semanticOutput, "member not found for the set request.\n");
 }
 void set_id_info_integer(ID_Information* id_entry, char* whatToUpdate, int value) {
 
 	if (id_entry == NULL)
 	{
-		printf("No id_entry to set.\n");
+		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -130,7 +130,7 @@ void set_id_info_integer(ID_Information* id_entry, char* whatToUpdate, int value
 	id_entry->numOfArguments = value;
 
 	else
-		printf("member not found for the set request.\n");
+		fprintf(semanticOutput, "member not found for the set request.\n");
 }
 
 char* get_id_type(ID_Information * id_entry) {
@@ -149,7 +149,7 @@ bool isIDExistInSymbolTable(char* id_name) {
 
 void checkIfIDAlreadyDeclared(char* id_name) {
 	if (!isIDExistInSymbolTable(id_name))
-		printf("The ID: %s in line %u must be declared before being used.\n", id_name, getCurrentToken()->lineNumber);
+		fprintf(semanticOutput, "The ID: %s in line %u must be declared before being used.\n", id_name, getCurrentToken()->lineNumber);
 	else
 		set_id_info_boolean(find(id_name), "wasUsed", true);
 }

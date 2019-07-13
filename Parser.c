@@ -2,6 +2,7 @@
 #include "Parser.h"
 #include "SymbolTable.h"
 #include "slist.h"
+#include "Utils.h"
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -289,7 +290,7 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 		
 		int arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		if (arraySize <= 0)
-			printf("Array size can not be a negative or zero.\n");
+			fprintf(semanticOutput, "Array size can not be a negative or zero.\n");
 		else if (arraySize > 0)
 		{
 			set_id_info_boolean(lookup(id_name), "isArray", true);			// set id as array.
@@ -332,13 +333,13 @@ int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 																	// validate the index to be in the baundaries of the array.
 			if (numberInsideBrackets <= 0)
 			{
-				printf("Number inside bracket must be a positive integer (line: %u).\n", getCurrentToken()->lineNumber);
+				fprintf(semanticOutput, "Number inside bracket must be a positive integer (line: %u).\n", getCurrentToken()->lineNumber);
 				numberInsideBrackets = INT_MIN;
 			}
 		}
 		else
 		{
-			printf("Number inside bracket must be an integer (line: %u).\n", getCurrentToken()->lineNumber);
+			fprintf(semanticOutput, "Number inside bracket must be an integer (line: %u).\n", getCurrentToken()->lineNumber);
 		}
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
 		break;
@@ -461,7 +462,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
 		
 		if (strcmp(returnedTypeOfID, returnedTypeOfBlock) != 0)
-			printf("The block that end in line %u return %s value while it should return %s.\n", 
+			fprintf(semanticOutput, "The block that end in line %u return %s value while it should return %s.\n",
 				getCurrentToken()->lineNumber ,returnedTypeOfBlock , returnedTypeOfID);
 		break;
 
@@ -706,7 +707,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		if (!isFunction(id_name))
-			printf("The id: %s is not a function, therefor calling to function on line %u is forbidden.", 
+			fprintf(semanticOutput, "The id: %s is not a function, therefor calling to function on line %u is forbidden.",
 				id_name, getCurrentToken()->lineNumber);
 		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
@@ -724,7 +725,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 			if (idToCheck->isArray)
 				checkBoundaries(indexInArray, idToCheck->sizeOfArray);
 			else
-				printf("The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
+				fprintf(semanticOutput, "The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
 		}
 
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);

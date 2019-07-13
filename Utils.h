@@ -3,6 +3,8 @@
 
 #include "Token.h"
 
+extern FILE *semanticOutput = NULL;
+
 extern int yylex();
 int yywrap();
 void printValidTokenToOutputFile(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);

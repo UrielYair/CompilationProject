@@ -3,6 +3,7 @@
 #include "ht_hash_table.h"
 #include "ht_item.h"
 #include "SymbolTable.h"
+#include "Utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -60,16 +61,16 @@ bool wereAllIDsUsed()
 			if (currentID->wasUsed == false)
 			{
 				everyIDWasInUse = false;
-				printf("The ID: %s wasn't in use in the current scope.\n", currentID->name);
+				fprintf(semanticOutput, "The ID: %s wasn't in use in the current scope.\n", currentID->name);
 				counterOfIDsWhichNotUsed++;
 			}
 		}
 	}
 
 	if (everyIDWasInUse)
-		printf("All the ID's were used.\n");
+		fprintf(semanticOutput, "All the ID's were in used in the current scope.\n");
 	else
-		printf("%u ID's wasn't in use.\n", counterOfIDsWhichNotUsed);
+		fprintf(semanticOutput, "%u ID's wasn't in use.\n", counterOfIDsWhichNotUsed);
 
 	return everyIDWasInUse;
 }
@@ -86,7 +87,7 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 	// Check if the id is a function.
 	if (!isFunction(id_name))
 	{
-		printf("Can't check the arguments because %s is not a function!\n", id_name);
+		fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
 		return;
 	}
 
@@ -101,7 +102,7 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 	listBSize = slist_get_count(argumentsOfFunction);
 	if (listASize != listBSize)
 	{
-		printf("The amount of parameters in the function call doesn't match the function definition.\n");
+		fprintf(semanticOutput, "The amount of parameters in the function call doesn't match the function definition.\n");
 		return;
 	}
 
@@ -112,7 +113,7 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 		ID_Information* A = (ID_Information*)a;
 		ID_Information* B = (ID_Information*)b;
 		if (!isAValueCanHoldBValue(A, B))
-			printf("Types mismatch. %s can't hold %s.\n",A->ID_Type,B->ID_Type);
+			fprintf(semanticOutput, "Types mismatch. %s can't hold %s.\n",A->ID_Type,B->ID_Type);
 	}
 }
 
@@ -126,7 +127,7 @@ bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 
 	if (isFunction(A->name))
 	{
-		printf("ID of function type can not hold variable value.\n");
+		fprintf(semanticOutput, "ID of function type can not hold variable value.\n");
 		return false;
 	}
 
@@ -148,20 +149,20 @@ bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 		(strcmp(aType, "real") == 0 && strcmp(bType, "real") == 0))
 		return true;
 
-	printf("%s can not get the value of %s as a variable.\n", A->name, B->name);
+	fprintf(semanticOutput, "%s can not get the value of %s as a variable.\n", A->name, B->name);
 	return false;
 }
 bool checkBoundaries(int indexInArray, int sizeOfArray) {
 	if (indexInArray >= 0 && indexInArray <= sizeOfArray)
 		return true;
-	printf("Invalid index for the array.\n");
+	fprintf(semanticOutput, "Invalid index for the array.\n");
 	return false;
 }
 bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment) {
 
 	if (strcmp(leftType, "error_type") == 0 || strcmp(rightType, "error_type") == 0)
 	{
-		printf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+		fprintf(semanticOutput, "%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
 		return false;
 	}
 
@@ -172,7 +173,7 @@ bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWith
 		(strcmp(leftType, "real") == 0 && strcmp(rightType, "real") == 0))
 		return true;
 
-	printf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+	fprintf(semanticOutput, "%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
 	return false;
 
 }
