@@ -72,19 +72,19 @@ void set_id_info_pointer(ID_Information * id_entry, char* whatToUpdate, void* va
 
 	// name
 	if (strcmp(whatToUpdate, "name") == 0)
-		strcpy(id_entry->name, (char*)value);
+		id_entry->name = _strdup((char*)value);
 
 	// functionOrVariable
 	else if (strcmp(whatToUpdate, "functionOrVariable") == 0)
-		strcpy(id_entry->functionOrVariable, (char*)value);
+		id_entry->functionOrVariable = _strdup((char*)value);
 
 	// ID_Type
 	else if (strcmp(whatToUpdate, "ID_Type") == 0)
-		strcpy(id_entry->ID_Type, (char*)value);
+		id_entry->ID_Type = _strdup((char*)value);
 
 	// returnedType
 	else if (strcmp(whatToUpdate, "returnedType") == 0)
-		strcpy(id_entry->returnedType, (char*)value);
+		id_entry->returnedType = _strdup((char*)value);
 
 	// listOfArguments
 	else if (strcmp(whatToUpdate, "listOfArguments") == 0)

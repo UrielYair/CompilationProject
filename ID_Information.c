@@ -118,11 +118,11 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 
 bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 
-	char aType[50];
-	char bType[50];
+	char* aType;
+	char* bType;
 	
-	strcpy(aType, find(A->name)->ID_Type);
-	strcpy(bType, find(B->name)->ID_Type);
+	aType = _strdup(find(A->name)->ID_Type);
+	bType = _strdup(find(B->name)->ID_Type);
 
 	if (isFunction(A->name))
 	{

@@ -10,6 +10,7 @@
 
 void			parse_PROGRAM				(FILE* outputFile)
 {
+	// TODO: maybe need to cancel the skipping.
 	Token* t = next_token();
 	parse_BB();
 
@@ -450,8 +451,11 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
-		set_id_info_pointer(find(id_name), "listOfArguments", argumentsOfFunction);
-		set_id_info_integer(find(id_name), "numOfArguments", argumentsOfFunction->count);
+		if (argumentsOfFunction != NULL)
+		{
+			set_id_info_pointer(find(id_name), "listOfArguments", argumentsOfFunction);
+			set_id_info_integer(find(id_name), "numOfArguments", argumentsOfFunction->count);
+		}
 		
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
@@ -492,7 +496,7 @@ char*			parse_RETURNED_TYPE			(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  TYPE)\n");
-		id_type = _strdup(parse_TYPE(outputFile));
+		id_type = parse_TYPE(outputFile);
 		break;
 
 	default:
@@ -559,7 +563,7 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 	case TOKEN_ID:
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS -> STATEMENT ; STATEMENTS_SUFFIX)\n");
-		returnedTypeOfStatement = _strdup(parse_STATEMENT(outputFile));
+		returnedTypeOfStatement = parse_STATEMENT(outputFile);
 		
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfStatementSuffix = parse_STATEMENTS_SUFFIX(outputFile);

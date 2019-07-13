@@ -12,7 +12,7 @@ ht_item HT_DELETED_ITEM = { NULL, NULL };
  */
 ht_item* ht_new_item(char* k, ID_Information* v) {
 	ht_item* i = xmalloc(sizeof(ht_item));
-	strcpy(i->key,k);
+	i->key= _strdup(k);
 	i->value = v;
 	return i;
 }
