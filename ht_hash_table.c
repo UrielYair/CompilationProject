@@ -120,7 +120,7 @@ static int ht_hash(const char* s, const int num_buckets, const int attempt) {
 /*
  * Inserts the 'key': 'value' pair into the hash table
  */
-void ht_insert(ht_hash_table * ht, const char* key, const ID_Information* value) {
+void ht_insert(ht_hash_table * ht, char* key, ID_Information* value) {
 	// Resize if load > 0.7
 	const int load = ht->count * 100 / ht->size;
 	if (load > 70) {
