@@ -127,10 +127,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ht_item.h" />
-    <ClInclude Include="IDInfoLinkedList.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="ID_Information.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="prime.h" />
@@ -143,10 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ht_item.c" />
-    <ClCompile Include="IDInfoLinkedList.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="ID_Information.c" />
     <ClCompile Include="Parser.c" />
     <ClCompile Include="prime.c" />
