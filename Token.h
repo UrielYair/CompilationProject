@@ -82,5 +82,6 @@ Token* peekN(Token* current, int numberOfNexts);
 Token* getCurrentToken();
 void freeMemory();
 Node* getFirstNode();
+char* getIdLexeme();
 
 #endif
