@@ -208,10 +208,22 @@ void* slistsConcat(slist* headList, slist* tailList) {
 	if (tailList == NULL)
 		return headList;
 
-	headList->tail->next = tailList->head;
-	headList->tail = tailList->tail;
+	slist* newList = slist_create();
+	snode* node = headList->head;
+	while (node != NULL)
+	{
+		slist_add_tail(newList, node->data);
+		node = node->next;
+	}
 
-	return headList;
+	node = tailList->head;
+	while (node != NULL)
+	{
+		slist_add_tail(newList, node->data);
+		node = node->next;
+	}
+
+	return newList;
 }
 
 //EXAMPLE PROGRAM:
