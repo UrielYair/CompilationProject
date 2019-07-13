@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+// TODO: check how to avoid redeclaring variables in method with the names of variable that recieved.
+
 void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
@@ -166,12 +168,12 @@ char*			parse_TYPE					(FILE* outputFile)
 	{
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(TYPE ->  real)\n");
-		typeOfID = strdup("real"); 
+		typeOfID = _strdup("real");
 		match(TOKEN_KW_REAL);
 		break;
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(TYPE ->  integer)\n");
-		typeOfID = strdup("integer");
+		typeOfID = _strdup("integer");
 		match(TOKEN_KW_INTEGER);
 		break;
 	
@@ -193,18 +195,18 @@ char*			parse_TYPE					(FILE* outputFile)
 }
 slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 {
-	slist* headOfIDsList = NULL;
+	slist* headOfIDsList = slist_create();
 	slist* tailOfIDsList = NULL;
-	ID_Information* headNode = NULL;
+	ID_Information* idInformationOfHeadNode = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
 	
 	switch (t->kind)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
-		headNode = parse_VARIABLE(outputFile, id_type);
-		set_id_info(headNode, "ID_Type", id_type);
-		headOfIDsList = snode_create(headNode);
+		idInformationOfHeadNode = parse_VARIABLE(outputFile);
+		set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
+		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
@@ -230,18 +232,18 @@ slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 {
 	// nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
-	slist* headOfIDsList = NULL;
+	slist* headOfIDsList = slist_create();
 	slist* tailOfIDsList = NULL;
-	ID_Information* IDInfo = NULL;
+	ID_Information* idInformationOfHeadNode = NULL;
 
 	switch (t->kind)
 	{
 	case TOKEN_COMMA:
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
-		IDInfo = parse_VARIABLE(outputFile, id_type);
-		set_id_info(IDInfo, "ID_Type", id_type);
-		headOfIDsList = snode_create(IDInfo);
+		idInformationOfHeadNode = parse_VARIABLE(outputFile);
+		set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
+		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
@@ -282,15 +284,15 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 		match(TOKEN_ID);
 		id_name = getIdLexeme();
 		insert(id_name);
-		set_id_info(find(id_name), "functionOrVariable", "variable");
+		set_id_info_pointer(find(id_name), "functionOrVariable", "variable");
 		
 		int arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		if (arraySize <= 0)
 			printf("Array size can not be a negative or zero.\n");
 		else if (arraySize > 0)
 		{
-			set_id_info(lookup(id_name), "isArray", true);			// set id as array.
-			set_id_info(lookup(id_name), "sizeOfArray", arraySize);	// set array size.
+			set_id_info_boolean(lookup(id_name), "isArray", true);			// set id as array.
+			set_id_info_integer(lookup(id_name), "sizeOfArray", arraySize);	// set array size.
 		}
 		new_id = find(id_name);
 		break;
@@ -311,12 +313,12 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 	}
 	return new_id;
 }
-int*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
+int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
 	char* variableType = NULL;
-	int* numberInsideBrackets = NULL; // 0 will indicate problems during deriving variable_suffix.
+	int numberInsideBrackets = INT_MIN; // negative value will indicate problems during deriving variable_suffix.
 
 	switch (t->kind)
 	{
@@ -325,13 +327,12 @@ int*			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
 		if (match(TOKEN_INT_NUMBER))
 		{
-			*numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
+			numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
 																	// validate the index to be in the baundaries of the array.
-			if (*numberInsideBrackets <= 0)
+			if (numberInsideBrackets <= 0)
 			{
 				printf("Number inside bracket must be a positive integer (line: %u).\n", getCurrentToken()->lineNumber);
-				*numberInsideBrackets = 0;
-
+				numberInsideBrackets = INT_MIN;
 			}
 		}
 		else
@@ -427,10 +428,10 @@ void			parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile)
 void			parse_FUNC_DEFINITION		(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
-	char* returnedTypeOfID = NULL;
+	char* returnedTypeOfID;
 	char* id_name = NULL;
-	slist* argumentsOfFunction = NULL;
-	char* returnedTypeOfBlock = NULL;
+	slist* argumentsOfFunction;
+	char* returnedTypeOfBlock;
 
 	switch (t->kind)
 	{
@@ -443,14 +444,14 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		{
 			id_name = getCurrentToken()->lexeme;
 			insert(id_name);
-			set_id_info(find(id_name), "functionOrVariable", "function");	// set id to function type.
-			set_id_info(find(id_name), "returnedType", returnedTypeOfID);	// set returned type of the function.
+			set_id_info_pointer(find(id_name), "functionOrVariable", "function");	// set id to function type.
+			set_id_info_pointer(find(id_name), "returnedType", returnedTypeOfID);	// set returned type of the function.
 		}
 		
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
-		set_id_info(find(id_name), "listOfArguments", argumentsOfFunction);
-		set_id_info(find(id_name), "numOfArguments", argumentsOfFunction->count);
+		set_id_info_pointer(find(id_name), "listOfArguments", argumentsOfFunction);
+		set_id_info_integer(find(id_name), "numOfArguments", argumentsOfFunction->count);
 		
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
@@ -485,13 +486,13 @@ char*			parse_RETURNED_TYPE			(FILE* outputFile)
 	case TOKEN_KW_VOID:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  void)\n");
 		match(TOKEN_KW_VOID);
-		id_type = strdup("void");
+		id_type = _strdup("void");
 		break;
 
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(RETURNED_TYPE ->  TYPE)\n");
-		id_type = parse_TYPE(outputFile);
+		id_type = _strdup(parse_TYPE(outputFile));
 		break;
 
 	default:
@@ -558,7 +559,7 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 	case TOKEN_ID:
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENTS -> STATEMENT ; STATEMENTS_SUFFIX)\n");
-		returnedTypeOfStatement = parse_STATEMENT(outputFile);
+		returnedTypeOfStatement = _strdup(parse_STATEMENT(outputFile));
 		
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfStatementSuffix = parse_STATEMENTS_SUFFIX(outputFile);
@@ -570,23 +571,23 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 		the following commands will check if there were a return statement with value and return the type of the value.
 		*/
 		if (returnedTypeOfStatementSuffix == NULL)
-			strcpy(returnedValueType, returnedTypeOfStatement);
+			returnedValueType = _strdup(returnedTypeOfStatement);
 		else
 		{
 			if (strcmp(returnedTypeOfStatement, "void") == 0 &&
 				strcmp(returnedTypeOfStatementSuffix, "void") != 0)
-				strcpy(returnedValueType, returnedTypeOfStatementSuffix);
+				returnedValueType = _strdup(returnedTypeOfStatementSuffix);
 
 			else if (strcmp(returnedTypeOfStatement, "void") != 0 &&
 				strcmp(returnedTypeOfStatementSuffix, "void") == 0)
-				strcpy(returnedValueType, returnedTypeOfStatement);
+				returnedValueType = _strdup(returnedTypeOfStatement);
 
 			else if (strcmp(returnedTypeOfStatement, "void") == 0 &&
 				strcmp(returnedTypeOfStatementSuffix, "void") == 0)
-				strcpy(returnedValueType, "void");
+				returnedValueType = _strdup("void");
 
 			else
-				strcpy(returnedValueType, returnedTypeOfStatementSuffix);
+				returnedValueType= _strdup(returnedTypeOfStatementSuffix);
 		}
 
 		break;
@@ -667,7 +668,7 @@ char*			parse_STATEMENT				(FILE* outputFile)
 		match(TOKEN_ID);
 		char* id_name = getIdLexeme();
 		parse_STATEMENT_SUFFIX(outputFile,id_name);
-		strcpy(returnType, "void");
+		returnType= _strdup("void");
 		break;
 
 	default:
@@ -712,12 +713,12 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
 		leftType = idToCheck->ID_Type;
-		int* indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		
-		if (indexInArray != NULL)
+		if (indexInArray >= -1)
 		{
 			if (idToCheck->isArray)
-				checkBoundaries(*indexInArray, idToCheck->sizeOfArray);
+				checkBoundaries(indexInArray, idToCheck->sizeOfArray);
 			else
 				printf("The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
 		}
@@ -726,7 +727,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
 		if (assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment))
-			set_id_info(idToCheck, "ID_Type", "error_type");
+			set_id_info_pointer(idToCheck, "ID_Type", "error_type");
 
 		break;
 
@@ -796,7 +797,7 @@ char*			parse_BLOCK					(FILE* outputFile)
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
 		if (returnedTypeOfBlock == NULL)
-			returnedTypeOfBlock = strdup("void");
+			returnedTypeOfBlock=_strdup("void");
 		parse_FB();
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
 		break;
@@ -862,13 +863,13 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 	case TOKEN_INT_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  int_number)\n");
 		match(TOKEN_INT_NUMBER);
-		returnType = strdup("integer");
+		returnType=_strdup("integer");
 		break;
 
 	case TOKEN_REAL_NUMBER:
 		fprintf(outputFile, "Rule(EXPRESSION ->  real_number)\n");
 		match(TOKEN_REAL_NUMBER);
-		returnType = strdup("real");
+		returnType = _strdup("real");
 		break;
 
 	case TOKEN_ID:
@@ -907,6 +908,7 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		back_token();
 		break;
 	}
+	return returnType;
 }
 void			getAllFuctionDeclared		(FILE* outputFile) {
 

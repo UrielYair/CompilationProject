@@ -118,8 +118,11 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 
 bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 
-	char* aType = strdup(find(A->name)->ID_Type);
-	char* bType = strdup(find(B->name)->ID_Type);
+	char aType[50];
+	char bType[50];
+	
+	strcpy(aType, find(A->name)->ID_Type);
+	strcpy(bType, find(B->name)->ID_Type);
 
 	if (isFunction(A->name))
 	{
@@ -158,7 +161,7 @@ bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWith
 
 	if (strcmp(leftType, "error_type") == 0 || strcmp(rightType, "error_type") == 0)
 	{
-		prinf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+		printf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
 		return false;
 	}
 
@@ -169,7 +172,7 @@ bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWith
 		(strcmp(leftType, "real") == 0 && strcmp(rightType, "real") == 0))
 		return true;
 
-	prinf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+	printf("%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
 	return false;
 
 }
@@ -180,4 +183,5 @@ char* arithmeticTypeChecking(char* operandA, char* operandB) {
 		return "error_type";
 	if (strcmp(operandA, "real") == 0 || strcmp(operandB, "real") == 0)
 		return "real";
+	return "error_type";
 }
