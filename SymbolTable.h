@@ -10,6 +10,7 @@ typedef struct SymbolTable {
 	ht_hash_table* currentSymbolTable;
 } SymbolTable;
 
+extern SymbolTable* currentTable;
 
 //	*******************   functions   *******************
 

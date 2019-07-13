@@ -1,8 +1,8 @@
 #include "ID_Information.h"
-#include "Token.c"
+#include "Token.h"
 #include "ht_hash_table.h"
-#include "ht_item.c"
-#include "SymbolTable.c"
+#include "ht_item.h"
+#include "SymbolTable.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,7 +14,7 @@ ID_Information* new_ID_Information(char* name) {
 
 	if (new_id != NULL)
 	{
-		strcpy(new_id->name,name);
+		new_id->name = _strdup(name);
 		new_id->functionOrVariable = NULL;
 		new_id->wasUsed = false;
 		new_id->ID_Type = NULL;

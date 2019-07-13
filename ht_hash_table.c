@@ -8,7 +8,6 @@
 #include "SymbolTable.h"
 #include "prime.h"
 #include "ht_item.h"
-#include "ht_item.c"
 
 
 
@@ -192,7 +191,3 @@ void ht_delete(ht_hash_table * ht, const char* key) {
 	}
 	ht->count--;
 }
-
-
-
-
