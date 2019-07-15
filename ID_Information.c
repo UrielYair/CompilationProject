@@ -29,18 +29,19 @@ ID_Information* new_ID_Information(char* name) {
 }
 
 void delete_ID_Information(ID_Information* idToDelete) {
-
+	
 	free(idToDelete->name);
 
 	if (strcmp(idToDelete->functionOrVariable, "function") == 0)
 	{
 		free(idToDelete->returnedType);
 		slist_delete(idToDelete->listOfArguments);
-		free(idToDelete->listOfArguments);
+	// TODO: UNCOMMENT
+		//	free(idToDelete->listOfArguments); 
 	}
 	free(idToDelete->functionOrVariable);
 	free(idToDelete->ID_Type);
-
+	
 	free(idToDelete);
 }
 
@@ -61,24 +62,25 @@ bool wereAllIDsUsed()
 			if (currentID->wasUsed == false)
 			{
 				everyIDWasInUse = false;
-				fprintf(semanticOutput, "The ID: %s wasn't in use in the current scope.\n", currentID->name);
+				fprintf(semanticOutput, "Variable (%s) wasn't in use in the scope that end in line: %d.\n", currentID->name, getCurrentToken()->lineNumber);
 				counterOfIDsWhichNotUsed++;
 			}
 		}
 	}
 
 	if (everyIDWasInUse)
-		fprintf(semanticOutput, "All the ID's were in used in the current scope.\n");
+		fprintf(semanticOutput, "All the ID's were in used in the scope that end in line: %d.\n", getCurrentToken()->lineNumber);
 	else
-		fprintf(semanticOutput, "%u ID's wasn't in use.\n", counterOfIDsWhichNotUsed);
+		fprintf(semanticOutput, "SUMMARY: %u ID's were not in use in the scope that end in line: %d.\n", counterOfIDsWhichNotUsed, getCurrentToken()->lineNumber);
 
 	return everyIDWasInUse;
 }
 
 bool isFunction(char* id_name) {
 	ID_Information* idToCheck = find(id_name);
-	if (strcmp(idToCheck->functionOrVariable, "function") == 0)
-		return true;
+	if (idToCheck != NULL)
+		if (strcmp(idToCheck->functionOrVariable, "function") == 0)
+			return true;
 	return false;
 }
 
@@ -155,14 +157,16 @@ bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 bool checkBoundaries(int indexInArray, int sizeOfArray) {
 	if (indexInArray >= 0 && indexInArray <= sizeOfArray)
 		return true;
-	fprintf(semanticOutput, "Invalid index for the array.\n");
 	return false;
 }
 bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment) {
 
+	if (leftType == NULL || rightType == NULL)
+		return false;
+
 	if (strcmp(leftType, "error_type") == 0 || strcmp(rightType, "error_type") == 0)
 	{
-		fprintf(semanticOutput, "%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+		fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", leftType, rightType, lineNumberWithAssighnment);
 		return false;
 	}
 
@@ -173,11 +177,13 @@ bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWith
 		(strcmp(leftType, "real") == 0 && strcmp(rightType, "real") == 0))
 		return true;
 
-	fprintf(semanticOutput, "%s can not be saved into %s. line number: %u.\n", rightType, leftType, lineNumberWithAssighnment);
+	fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", leftType, rightType, lineNumberWithAssighnment);
 	return false;
 
 }
 char* arithmeticTypeChecking(char* operandA, char* operandB) {
+	if (operandA==NULL || operandB ==NULL)
+		return "error_type";
 	if (strcmp(operandA, operandB) == 0)
 		return operandA;
 	if (strcmp(operandA, "error_type") == 0 || strcmp(operandB, "error_type") == 0)

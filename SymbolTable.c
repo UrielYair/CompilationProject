@@ -3,13 +3,12 @@
 #include "Token.h"
 #include "slist.h"
 #include "ID_Information.h"
+#include "Utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
 // TODO: remember to free memory in the end.
-// TODO: think about a way to transfer id's list into the block to 
-//		 eliminate ability of declere a variable that is in the parameters list.
 
 SymbolTable* currentTable = NULL;
 
@@ -37,7 +36,7 @@ ID_Information* insert(char* id_name) {
 	ID_Information* info = lookup(id_name);
 	if (info != NULL)
 	{
-		fprintf(semanticOutput, "The id (%s) is already defined. - line: %u.\n", id_name, getCurrentToken()->lineNumber);
+		fprintf(semanticOutput, "id (%s) is already defined. - line: %u.\n", id_name, getCurrentToken()->lineNumber);
 		return NULL;
 	}
 	info = new_ID_Information(id_name);
@@ -53,7 +52,8 @@ ID_Information* find(char* id_name) {
 	SymbolTable* tempSymbolTableToCheck = currentTable;
 	while (tempSymbolTableToCheck != NULL)
 	{
-		ID_Information* result = ht_search(currentTable->currentSymbolTable, id_name);
+		//ID_Information* result = ht_search(currentTable->currentSymbolTable, id_name);
+		ID_Information* result = ht_search(tempSymbolTableToCheck->currentSymbolTable, id_name);
 		if (result != NULL)
 			return result;
 		tempSymbolTableToCheck = tempSymbolTableToCheck->father;
@@ -149,7 +149,7 @@ bool isIDExistInSymbolTable(char* id_name) {
 
 void checkIfIDAlreadyDeclared(char* id_name) {
 	if (!isIDExistInSymbolTable(id_name))
-		fprintf(semanticOutput, "The ID: %s in line %u must be declared before being used.\n", id_name, getCurrentToken()->lineNumber);
+		fprintf(semanticOutput, "id (%s) must be declared before being used. line %u.\n", id_name, getCurrentToken()->lineNumber);
 	else
 		set_id_info_boolean(find(id_name), "wasUsed", true);
 }

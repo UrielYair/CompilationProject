@@ -27,8 +27,6 @@ char*	parse_BLOCK(FILE* outputFile);
 slist*	parse_PARAMETERS_LIST(FILE* outputFile);
 char*	parse_EXPRESSION(FILE* outputFile);
 
-void	getAllFuctionDeclared(FILE* outputFile);
-
 void	parse_BB();
 void	parse_FB();
 

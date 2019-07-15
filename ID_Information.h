@@ -26,7 +26,6 @@ typedef struct ID_Information {
 ID_Information* new_ID_Information(char* name);
 void delete_ID_Information(ID_Information* idToDelete);
 ID_Information* new_ID_Information(char* name);
-void delete_ID_Information(ID_Information* idToDelete);
 bool isFunction(char* id_name);
 void	checkFunctionArguments(char* id_name, slist* argumentsOfFunction);
 bool	isAValueCanHoldBValue(ID_Information* A, ID_Information* B);

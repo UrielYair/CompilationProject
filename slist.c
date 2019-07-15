@@ -31,7 +31,9 @@ void slist_empty(slist* list)
 	node = list->head;
 	while (node != NULL) {
 		temp = node->next;
-		delete_ID_Information((ID_Information*)node->data);
+		// TODO: UNCOMMENT.
+//		if(node->data != NULL)
+	//		delete_ID_Information((ID_Information*)node->data);
 		free(node);
 		node = temp;
 	}

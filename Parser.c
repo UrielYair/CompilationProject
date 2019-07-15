@@ -7,11 +7,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// TODO: check how to avoid redeclaring variables in method with the names of variable that recieved.
 
 void			parse_PROGRAM				(FILE* outputFile)
 {
-	// TODO: maybe need to cancel the skipping.
 	Token* t = next_token();
 	parse_BB();
 
@@ -19,28 +17,13 @@ void			parse_PROGRAM				(FILE* outputFile)
 	{
 	case TOKEN_KW_PROGRAM:
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
-		
-		/*
-			In order to get all the functions declared in the global scope,
-			The program will skip right to function declaration area in the input.
-			and then save them in the symbols table.
-			After that, the program will get back to the first token after the keyword "program".
-		*/ 
-		getAllFuctionDeclared(outputFile);
-		// The scanner is now on the "program" token again.
-
 		parse_VAR_DEFINITIONS(outputFile);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
 		match(TOKEN_KW_END);
-		// parse_FUNC_DEFINITIONS(outputFile);   // already parsed in the begining.
-		
-		// Skipping function declarations area:
-		while (t->kind != TOKEN_END_OF_FILE)
-			t = next_token();
-		back_token();
-
+		parse_FUNC_DEFINITIONS(outputFile);
 		break;
+
 	default:
 		printf("Expected: one of tokens: %s at line %u,\nActual token : %s, lexeme: %s.\n",
 			"program", t->lineNumber, tokenToString(t->kind), t->lexeme);
@@ -290,8 +273,9 @@ ID_Information* parse_VARIABLE				(FILE* outputFile)
 		
 		int arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		if (arraySize <= 0)
-			fprintf(semanticOutput, "Array size can not be a negative or zero.\n");
-		else if (arraySize > 0)
+			fprintf(semanticOutput, "id (%s) have an invalid index, index must be a natural number. - line: %d.\n", id_name, getCurrentToken()->lineNumber);
+			
+		else if (arraySize > 0 && arraySize<INT_MAX)
 		{
 			set_id_info_boolean(lookup(id_name), "isArray", true);			// set id as array.
 			set_id_info_integer(lookup(id_name), "sizeOfArray", arraySize);	// set array size.
@@ -320,7 +304,7 @@ int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
 	char* variableType = NULL;
-	int numberInsideBrackets = INT_MIN; // negative value will indicate problems during deriving variable_suffix.
+	int numberInsideBrackets = INT_MAX; // negative value will indicate problems during deriving variable_suffix.
 
 	switch (t->kind)
 	{
@@ -328,19 +312,11 @@ int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
 		if (match(TOKEN_INT_NUMBER))
-		{
 			numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
 																	// validate the index to be in the baundaries of the array.
-			if (numberInsideBrackets <= 0)
-			{
-				fprintf(semanticOutput, "Number inside bracket must be a positive integer (line: %u).\n", getCurrentToken()->lineNumber);
-				numberInsideBrackets = INT_MIN;
-			}
-		}
 		else
-		{
-			fprintf(semanticOutput, "Number inside bracket must be an integer (line: %u).\n", getCurrentToken()->lineNumber);
-		}
+			fprintf(semanticOutput, "id (%s) have an invalid index, index must be integer. - line: %d.\n", id_name, getCurrentToken()->lineNumber);
+		
 		match(TOKEN_CLOSE_SQUARE_BRACKETS);
 		break;
 
@@ -376,8 +352,10 @@ void			parse_FUNC_DEFINITIONS		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(FUNC_DEFINITIONS -> FUNC_DEFINITION FUNC_DEFINITIONS_SUFFIX )\n");
+		parse_BB();
 		parse_FUNC_DEFINITION(outputFile);
 		parse_FUNC_DEFINITIONS_SUFFIX(outputFile);
+		parse_FB();
 		break;
 	default:
 		t = next_token();
@@ -441,6 +419,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(FUNC_DEFINITION -> RETURNED_TYPE id ( PARAM_DEFINITIONS ) BLOCK)\n");
+		
 		returnedTypeOfID = parse_RETURNED_TYPE(outputFile);
 		if (match(TOKEN_ID))
 		{
@@ -449,7 +428,8 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 			set_id_info_pointer(find(id_name), "functionOrVariable", "function");	// set id to function type.
 			set_id_info_pointer(find(id_name), "returnedType", returnedTypeOfID);	// set returned type of the function.
 		}
-		
+		parse_BB(); // in order to get the id's that declared in the params inside the scope of the function. 
+					// After the function ends delete them from the symbol table.
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
 		if (argumentsOfFunction != NULL)
@@ -464,6 +444,8 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		if (strcmp(returnedTypeOfID, returnedTypeOfBlock) != 0)
 			fprintf(semanticOutput, "The block that end in line %u return %s value while it should return %s.\n",
 				getCurrentToken()->lineNumber ,returnedTypeOfBlock , returnedTypeOfID);
+		
+		parse_FB();
 		break;
 
 	default:
@@ -577,6 +559,8 @@ char*			parse_STATEMENTS			(FILE* outputFile)
 		*/
 		if (returnedTypeOfStatementSuffix == NULL)
 			returnedValueType = _strdup(returnedTypeOfStatement);
+		else if (returnedTypeOfStatement == NULL)
+			returnedValueType = _strdup("error_type");
 		else
 		{
 			if (strcmp(returnedTypeOfStatement, "void") == 0 &&
@@ -666,6 +650,8 @@ char*			parse_STATEMENT				(FILE* outputFile)
 		fprintf(outputFile, "Rule(STATEMENT ->  return RETURN_SUFFIX)\n");
 		match(TOKEN_KW_RETURN);
 		returnType = parse_RETURN_SUFFIX(outputFile);
+		if (returnType == NULL)
+			returnType = _strdup("void");
 		break;
 
 	case TOKEN_ID:
@@ -707,25 +693,41 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		if (!isFunction(id_name))
-			fprintf(semanticOutput, "The id: %s is not a function, therefor calling to function on line %u is forbidden.",
+			fprintf(semanticOutput, "id: (%s) is not a function, calling to function which not declared is forbidden. line %u.\n",
 				id_name, getCurrentToken()->lineNumber);
 		argumentsOfFunction = parse_PARAMETERS_LIST(outputFile);
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
-		checkFunctionArguments(id_name, argumentsOfFunction);
+		if (isFunction(id_name))
+			checkFunctionArguments(id_name, argumentsOfFunction);
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 	case TOKEN_ARITHMETIC_ASSIGNMENT:
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
-		leftType = idToCheck->ID_Type;
+		if (idToCheck != NULL)
+			leftType = idToCheck->ID_Type;
 		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		
-		if (indexInArray >= -1)
+		if(idToCheck != NULL && idToCheck->isArray && indexInArray==INT_MAX ) // eliminate option of assignment into array
+			fprintf(semanticOutput, "id: (%s) is array, assighnment to array is forbidden. assighnment allowed only to array element. line %u.\n",
+				id_name, getCurrentToken()->lineNumber);
+
+		if(isFunction(id_name))
+			fprintf(semanticOutput, "id: (%s) is function, assighnment to function is forbidden. line %u.\n",
+				id_name, getCurrentToken()->lineNumber);
+
+		if (indexInArray >= 0 && indexInArray<INT_MAX)
 		{
-			if (idToCheck->isArray)
-				checkBoundaries(indexInArray, idToCheck->sizeOfArray);
-			else
-				fprintf(semanticOutput, "The id (%s) in line: %u must be an array.\n", idToCheck->name, getCurrentToken()->lineNumber);
+			if (idToCheck != NULL)
+			{
+				if (idToCheck->isArray)
+				{
+					if (!checkBoundaries(indexInArray, idToCheck->sizeOfArray))
+						fprintf(semanticOutput, "id (%s) have an invalid index, index must be integer number between 0 and %d. - line: %d.\n", id_name, idToCheck->sizeOfArray, getCurrentToken()->lineNumber);
+				}
+				else
+					fprintf(semanticOutput, "id (%s) must be an array. - line: %d\n", idToCheck->name, getCurrentToken()->lineNumber);
+			}
 		}
 
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
@@ -803,8 +805,8 @@ char*			parse_BLOCK					(FILE* outputFile)
 		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
 		if (returnedTypeOfBlock == NULL)
 			returnedTypeOfBlock=_strdup("void");
-		parse_FB();
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
+		parse_FB();
 		break;
 
 	default:
@@ -862,7 +864,9 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 	Token* t = peekN(getCurrentToken(), 1);
 	Token* tokenToCheck;
 	char* returnType = NULL;
+	ID_Information* ID_Info = NULL;
 
+	
 	switch (t->kind)
 	{
 	case TOKEN_INT_NUMBER:
@@ -885,11 +889,23 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
 			match(TOKEN_ID);
 			char* id_name = getIdLexeme();
+			ID_Info = find(id_name);
 			checkIfIDAlreadyDeclared(id_name);
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
 			char* expressionType = parse_EXPRESSION(outputFile);
-			
-			returnType = arithmeticTypeChecking(find(id_name)->ID_Type, expressionType);
+			if (ID_Info != NULL)
+			{
+				if (ID_Info->isArray)
+				{
+					fprintf(semanticOutput, "id (%s) in expression, can not be array. - line: %d.\n",
+						id_name, getCurrentToken()->lineNumber);
+					returnType = _strdup("error_type");
+				}
+				else
+					returnType = arithmeticTypeChecking(ID_Info->ID_Type, expressionType);
+			}
+			else
+				returnType = _strdup("error_type");
 		}
 		else
 		{
@@ -914,20 +930,6 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		break;
 	}
 	return returnType;
-}
-void			getAllFuctionDeclared		(FILE* outputFile) {
-
-	Token* t = getCurrentToken();
-
-	// skipping forward untill "end" keyword:
-	while (t->kind != TOKEN_KW_END)
-		t = next_token();
-
-	parse_FUNC_DEFINITIONS(outputFile);
-
-	// skipping backward untill "program" keyword:
-	while (t->kind != TOKEN_KW_PROGRAM)
-		t = back_token();
 }
 
 void			parse_BB() {
