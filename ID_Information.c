@@ -36,8 +36,6 @@ void delete_ID_Information(ID_Information* idToDelete) {
 	{
 		free(idToDelete->returnedType);
 		slist_delete(idToDelete->listOfArguments);
-	// TODO: UNCOMMENT
-		//	free(idToDelete->listOfArguments); 
 	}
 	free(idToDelete->functionOrVariable);
 	free(idToDelete->ID_Type);

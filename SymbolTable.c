@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// TODO: remember to free memory in the end.
-
 SymbolTable* currentTable = NULL;
 
 SymbolTable* make_table() {

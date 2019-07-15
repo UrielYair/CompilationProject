@@ -23,7 +23,7 @@ ht_item* ht_new_item(char* k, ID_Information* v) {
  */
 void ht_del_item(ht_item* i) {
 	free(i->key);
-	delete_ID_Information(i->value); // free(i->value); 
+	delete_ID_Information(i->value);
 	free(i);
 }
 
