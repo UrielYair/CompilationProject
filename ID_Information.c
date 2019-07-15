@@ -97,23 +97,28 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 
 	// Checking if the amount of argument is equal to the 
 	// recieved variables in the functions call.
-	int listASize, listBSize;
+	int listASize, listBSize, parameterNumber=1;
 	listASize = slist_get_count(argumentdsOfIdToCheck);
 	listBSize = slist_get_count(argumentsOfFunction);
 	if (listASize != listBSize)
 	{
-		fprintf(semanticOutput, "The amount of parameters in the function call doesn't match the function definition.\n");
+		fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", id_name ); 
+		fprintf(semanticOutput, "The amount of parameters in the function call doesn't match the function definition. - line: %d \n",getCurrentToken()->lineNumber);
 		return;
 	}
 
 	for (a = argumentdsOfIdToCheck->head->data, b = argumentsOfFunction->head->data;
 		a->next != NULL && b->next != NULL;
-		a = a->next, b = b->next)
+		a = a->next, b = b->next,parameterNumber++)
 	{
 		ID_Information* A = (ID_Information*)a;
 		ID_Information* B = (ID_Information*)b;
 		if (!isAValueCanHoldBValue(A, B))
-			fprintf(semanticOutput, "Types mismatch. %s can't hold %s.\n",A->ID_Type,B->ID_Type);
+		{
+			fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n");
+			fprintf(semanticOutput, "Types mismatch. %s can't hold %s. parameter number: %d. - line: %d.\n", 
+				A->ID_Type, B->ID_Type, parameterNumber, getCurrentToken()->lineNumber);
+		}
 	}
 }
 
