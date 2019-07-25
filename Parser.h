@@ -11,7 +11,7 @@ slist*	parse_VAR_DEFINITION(FILE* outputFile);
 char*	parse_TYPE(FILE* outputFile);
 slist*	parse_VARIABLES_LIST(FILE* outputFile, char* id_type);
 slist*	parse_VARIABLES_LIST_SUFFIX(FILE* outputFile, char* id_type);
-ID_Information*	parse_VARIABLE(FILE* outputFile);
+ID_Information*	parse_VARIABLE(FILE* outputFile, bool declaring);
 int		parse_VARIABLE_SUFFIX(FILE* outputFile, char* id_name);
 void	parse_FUNC_DEFINITIONS(FILE* outputFile);
 void	parse_FUNC_DEFINITIONS_SUFFIX(FILE* outputFile);
