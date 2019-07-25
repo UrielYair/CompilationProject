@@ -48,9 +48,9 @@ ID_Information* lookup(char* id_name) {
 
 ID_Information* find(char* id_name) {
 	SymbolTable* tempSymbolTableToCheck = currentTable;
+	
 	while (tempSymbolTableToCheck != NULL)
 	{
-		//ID_Information* result = ht_search(currentTable->currentSymbolTable, id_name);
 		ID_Information* result = ht_search(tempSymbolTableToCheck->currentSymbolTable, id_name);
 		if (result != NULL)
 			return result;
@@ -147,7 +147,7 @@ bool isIDExistInSymbolTable(char* id_name) {
 
 void checkIfIDAlreadyDeclared(char* id_name) {
 	if (!isIDExistInSymbolTable(id_name))
-		fprintf(semanticOutput, "id (%s) must be declared before being used. line %u.\n", id_name, getCurrentToken()->lineNumber);
+		fprintf(semanticOutput, "id (%s) must be declared before being used. - line %u.\n", id_name, getCurrentToken()->lineNumber);
 	else
 		set_id_info_boolean(find(id_name), "wasUsed", true);
 }
