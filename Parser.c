@@ -19,12 +19,14 @@ void			parse_PROGRAM				(FILE* outputFile)
 	{
 	case TOKEN_KW_PROGRAM:
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
-		parse_VAR_DEFINITIONS(outputFile);
+		parse_VAR_DEFINITIONS(outputFile,true);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
 		parse_FB(); // TODO: choose between line 25 or 40 {parse_FB()}
 		match(TOKEN_KW_END);
+		parse_BB(); // TODO: choose between line 25 or 40 {parse_FB()}
 		parse_FUNC_DEFINITIONS(outputFile);
+		parse_FB();// TODO: choose between line 25 or 40 {parse_FB()}
 		break;
 
 	default:
@@ -37,10 +39,10 @@ void			parse_PROGRAM				(FILE* outputFile)
 		back_token();
 		break;
 	}
-	//parse_FB();
+	
 }
 /* This function will return linked list of all the ID's that discovered durring derivation of the input.*/
-slist*			parse_VAR_DEFINITIONS		(FILE* outputFile)
+slist*			parse_VAR_DEFINITIONS		(FILE* outputFile, bool declaring)
 {
 	slist* headOfIdsList = NULL;
 	slist* tailOfIDsList = NULL;
@@ -51,8 +53,8 @@ slist*			parse_VAR_DEFINITIONS		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(VAR_DEFINITIONS -> VAR_DEFINITION VAR_DEFINITIONS_SUFFIX)\n");
-		headOfIdsList = parse_VAR_DEFINITION(outputFile);			// parse_VAR_DEFINITION() will return only one ID_Information.
-		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile);	// parse_VAR_DEFINITIONS_SUFFIX() will return list of ID's with their info.
+		headOfIdsList = parse_VAR_DEFINITION(outputFile,declaring);			// parse_VAR_DEFINITION() will return only one ID_Information.
+		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile, declaring);	// parse_VAR_DEFINITIONS_SUFFIX() will return list of ID's with their info.
 		if (tailOfIDsList != NULL)
 			headOfIdsList = slistsConcat(headOfIdsList, tailOfIDsList);
 		break;
@@ -72,7 +74,7 @@ slist*			parse_VAR_DEFINITIONS		(FILE* outputFile)
 	}
 	return headOfIdsList;
 }
-slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
+slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile, bool declaring)
 {
 	// nullable - done
 	slist* listOfIDsToReturn = NULL;
@@ -87,7 +89,7 @@ slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 		{
 			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX  -> ; VAR_DEFINITIONS)\n");
 			match(TOKEN_SEMICOLON);
-			listOfIDsToReturn = parse_VAR_DEFINITIONS(outputFile);
+			listOfIDsToReturn = parse_VAR_DEFINITIONS(outputFile,declaring);
 		}
 		else
 		{
@@ -116,7 +118,7 @@ slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile)
 	return listOfIDsToReturn;
 }
 /* This function will return list of ID's of the same type. */
-slist*			parse_VAR_DEFINITION		(FILE* outputFile)
+slist*			parse_VAR_DEFINITION		(FILE* outputFile, bool declaring)
 {
 	slist* listOfIDs = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
@@ -127,7 +129,7 @@ slist*			parse_VAR_DEFINITION		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(VAR_DEFINITION ->  TYPE  VARIABLES_LIST)\n");
 		char* id_type = parse_TYPE(outputFile);
-		listOfIDs = parse_VARIABLES_LIST(outputFile, id_type);
+		listOfIDs = parse_VARIABLES_LIST(outputFile, id_type, declaring);
 		break;
 
 	default:
@@ -180,7 +182,7 @@ char*			parse_TYPE					(FILE* outputFile)
 	}
 	return typeOfID;
 }
-slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
+slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type, bool declaring)
 {
 	slist* headOfIDsList = slist_create();
 	slist* tailOfIDsList = NULL;
@@ -191,10 +193,10 @@ slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
-		idInformationOfHeadNode = parse_VARIABLE(outputFile,false);
+		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
 		set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
 		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
-		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
+		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type, declaring);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
@@ -215,7 +217,7 @@ slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type)
 	}
 	return headOfIDsList;
 }
-slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
+slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type, bool declaring)
 {
 	// nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
@@ -228,10 +230,10 @@ slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type)
 	case TOKEN_COMMA:
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
-		idInformationOfHeadNode = parse_VARIABLE(outputFile,false);
+		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
 		set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
 		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
-		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type);
+		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type,declaring);
 		if (tailOfIDsList != NULL)
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
@@ -272,37 +274,38 @@ ID_Information* parse_VARIABLE				(FILE* outputFile, bool declaring)
 		match(TOKEN_ID);				// No need to check if match() successeded 
 										// because it has already done in the switch statement.
 		id_name = getIdLexeme();
-		new_id = find(id_name);			//TODO: blabla
-		
-										// TODO: check if id need to be checked if already declared or not. it depend on which funtion called parse_VARIABLE().
+
 		if (declaring)	
 		{
 			insert(id_name);
+			new_id = find(id_name);			
 			if (new_id != NULL)
 				set_id_info_pointer(new_id, "functionOrVariable", "variable");
 		}
 		else 
 		{
+			new_id = find(id_name);
 			checkIfIDAlreadyDeclared(id_name);
 		}
 		
 		arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		
-		if (!declaring && arraySize == INT_MAX)
-		{
-			if(new_id != NULL && new_id->isArray)
-				fprintf(semanticOutput, "Arithmetic operation on the whole array (%s) is forbidden. - line: %d.\n", 
-					id_name, getCurrentToken()->lineNumber);
-		}
-
 		if (arraySize <= 0)
 			fprintf(semanticOutput, "id (%s) have an invalid index, index must be a natural number. - line: %d.\n", id_name, getCurrentToken()->lineNumber);
 		else if (new_id != NULL && arraySize > 0 && arraySize<INT_MAX && declaring)
 		{
-			// TODO: maybe should be lookup again.
 			set_id_info_boolean(new_id, "isArray", true);			// set id as array.
 			set_id_info_integer(new_id, "sizeOfArray", arraySize);	// set array size.
 		}
+
+		if (!declaring && arraySize == INT_MAX)
+		{
+			if (new_id != NULL && new_id->isArray)
+				fprintf(semanticOutput, "Arithmetic operation on the whole array (%s) is forbidden. - line: %d.\n",
+					id_name, getCurrentToken()->lineNumber);
+		}
+
+
 		break;
 
 	default:
@@ -326,14 +329,13 @@ int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
 	char* variableType = NULL;
-	int numberInsideBrackets = INT_MAX; // negative value will indicate problems during deriving variable_suffix.
+	int numberInsideBrackets = INT_MAX; // INT_MAX value will indicate problems during deriving variable_suffix.
 
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_SQUARE_BRACKETS:
 		fprintf(outputFile, "Rule(VARIABLE_SUFFIX-> [ int_number ])\n");
 		match(TOKEN_OPEN_SQUARE_BRACKETS);
-		//TODO: maybe should use the input parameter instead. in addition, make input validation.
 		if (match(TOKEN_INT_NUMBER))
 			numberInsideBrackets = atoi(getCurrentToken()->lexeme); // Saving the number will help later in updating the id entry or 
 																	// validate the index to be in the baundaries of the array.
@@ -442,7 +444,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(FUNC_DEFINITION -> RETURNED_TYPE id ( PARAM_DEFINITIONS ) BLOCK)\n");
-		
+				
 		returnedTypeOfID = parse_RETURNED_TYPE(outputFile);
 		if (match(TOKEN_ID))
 		{
@@ -464,9 +466,9 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
 		
-		if (strcmp(returnedTypeOfID, returnedTypeOfBlock) != 0)
-			fprintf(semanticOutput, "The block that end in line %u return %s value while it should return %s.\n",
-				getCurrentToken()->lineNumber ,returnedTypeOfBlock , returnedTypeOfID);
+		if (!assighnmentTypeChecking(returnedTypeOfID, returnedTypeOfBlock,getCurrentToken()->lineNumber))
+			fprintf(semanticOutput, "The block returns %s value while it should return %s. - line: %u.\n",
+				returnedTypeOfBlock , returnedTypeOfID, getCurrentToken()->lineNumber);
 		
 		parse_FB();
 		break;
@@ -533,7 +535,7 @@ slist*			parse_PARAM_DEFINITIONS		(FILE* outputFile)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(PARAM_DEFINITIONS->  VAR_DEFINITIONS)\n");
-		arguments = parse_VAR_DEFINITIONS(outputFile);
+		arguments = parse_VAR_DEFINITIONS(outputFile,true);
 		break;
 
 	case TOKEN_CLOSE_ROUND_BRACKETS:
@@ -730,7 +732,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
 		if (idToCheck != NULL)
 			leftType = idToCheck->ID_Type;
-		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name,false);
 		
 		if(idToCheck != NULL && idToCheck->isArray && indexInArray==INT_MAX ) // eliminate option of assignment into array
 			fprintf(semanticOutput, "id: (%s) is array, assighnment to array is forbidden. assighnment allowed only to array element. line %u.\n",
@@ -758,11 +760,10 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
 		// TODO: find a way to get the id that return from EXPRESSION, and check if already declared.
-		assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment); // TODO: instead of  the comments.
-		/*
-		if (assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment))
-			set_id_info_pointer(idToCheck, "ID_Type", "error_type"); // TODO: choose between the comments.
-		*/
+		if (!assighnmentTypeChecking(leftType, rightType, lineNumberWithAssighnment))
+			fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", 
+				leftType, rightType, lineNumberWithAssighnment);
+		
 		break;
 
 	default:
@@ -827,7 +828,7 @@ char*			parse_BLOCK					(FILE* outputFile)
 		fprintf(outputFile, "Rule(BLOCK -> { VAR_DEFINITIONS; STATEMENTS })\n");
 		match(TOKEN_OPEN_CURLY_BRACKETS);
 		parse_BB();
-		parse_VAR_DEFINITIONS(outputFile);
+		parse_VAR_DEFINITIONS(outputFile, true);
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
 		if (returnedTypeOfBlock == NULL)
@@ -863,7 +864,7 @@ slist*			parse_PARAMETERS_LIST		(FILE* outputFile)
 	{
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(PARAMETERS_LIST ->  VARIABLES_LIST)\n");
-		arguments = parse_VARIABLES_LIST(outputFile,"");
+		arguments = parse_VARIABLES_LIST(outputFile,"", false);
 		break;
 
 	case TOKEN_CLOSE_ROUND_BRACKETS:
@@ -917,6 +918,11 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			match(TOKEN_ID);
 			char* id_name = getIdLexeme();
 			ID_Info = find(id_name);
+			
+			if (ID_Info != NULL && ID_Info->isArray)
+				fprintf(semanticOutput, "Arithmetic operation on the whole array (%s) is forbidden. - line: %d.\n",
+					id_name, getCurrentToken()->lineNumber);
+			
 			checkIfIDAlreadyDeclared(id_name);
 			// TODO: id cannot be an array. add the relevant checking.
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
@@ -940,8 +946,8 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		else
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  VARIABLE)\n");
-			ID_Information* variableFromParse = parse_VARIABLE(outputFile,true);
-			//TODO: add an input validation.
+			ID_Information* variableFromParse = parse_VARIABLE(outputFile, false);
+
 			if (variableFromParse != NULL)
 			{
 				ID_Information* actual_id = find(variableFromParse->name);

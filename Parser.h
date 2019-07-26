@@ -5,12 +5,12 @@
 #include "ID_Information.h"
 
 void	parse_PROGRAM(FILE* output);
-slist*	parse_VAR_DEFINITIONS(FILE* outputFile);
-slist*	parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile);
-slist*	parse_VAR_DEFINITION(FILE* outputFile);
+slist*	parse_VAR_DEFINITIONS(FILE* outputFile, bool declaring);
+slist*	parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile, bool declaring);
+slist*	parse_VAR_DEFINITION(FILE* outputFile, bool declaring);
 char*	parse_TYPE(FILE* outputFile);
-slist*	parse_VARIABLES_LIST(FILE* outputFile, char* id_type);
-slist*	parse_VARIABLES_LIST_SUFFIX(FILE* outputFile, char* id_type);
+slist*	parse_VARIABLES_LIST(FILE* outputFile, char* id_type, bool declaring);
+slist*	parse_VARIABLES_LIST_SUFFIX(FILE* outputFile, char* id_type, bool declaring);
 ID_Information*	parse_VARIABLE(FILE* outputFile, bool declaring);
 int		parse_VARIABLE_SUFFIX(FILE* outputFile, char* id_name);
 void	parse_FUNC_DEFINITIONS(FILE* outputFile);
