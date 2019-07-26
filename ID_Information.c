@@ -65,8 +65,8 @@ bool wereAllIDsUsed()
 			}
 		}
 	}
-
-	if (everyIDWasInUse)
+	
+	if (everyIDWasInUse) // TODO: think about removing this part.
 		fprintf(semanticOutput, "All the ID's were in used in the scope that end in line: %d.\n", getCurrentToken()->lineNumber);
 	else
 		fprintf(semanticOutput, "SUMMARY: %u ID's were not in use in the scope that end in line: %d.\n", counterOfIDsWhichNotUsed, getCurrentToken()->lineNumber);
@@ -88,25 +88,30 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 	slist* argumentdsOfIdToCheck = NULL;
 	snode* a, * b;
 	int listASize, listBSize, parameterNumber = 1;
-	ID_Information* A = NULL;
-	ID_Information* B = NULL;
+	ID_Information* A = NULL, * B = NULL;
+	
 
-	// Check if the id is a function.
-	if (!isFunction(id_name))
+	if (idToCheck != NULL)		// Check if id is exist.
 	{
-		fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
-		return;
-	}
+		// Check if the id is a function.
+		if (!isFunction(id_name))
+		{
+			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
+			return;
+		}
 
-	// Check if id is exist.
-	if (idToCheck != NULL)
-	{
 		argumentdsOfIdToCheck = idToCheck->listOfArguments;
+		
 		if (argumentdsOfIdToCheck != NULL && argumentsOfFunction != NULL)
 		{
 			// Checking if the amount of argument is equal to the 
 			listASize = slist_get_count(argumentdsOfIdToCheck);
 			listBSize = slist_get_count(argumentsOfFunction);
+
+			a = argumentdsOfIdToCheck->head->data;
+			b = argumentsOfFunction->head->data;
+			A = (ID_Information*)a;
+			B = (ID_Information*)b;
 
 			if (listASize != listBSize)
 			{
@@ -114,13 +119,10 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 				fprintf(semanticOutput, "The amount of parameters in the function call doesn't match the function definition. - line: %d \n", getCurrentToken()->lineNumber);
 				return;
 			}
-
-			for (a = argumentdsOfIdToCheck->head->data, b = argumentsOfFunction->head->data;
-				a->next != NULL && b->next != NULL;
-				a = a->next, b = b->next, parameterNumber++)
-			{
-				A = (ID_Information*)a;
-				B = (ID_Information*)b;
+			
+			for (;a != NULL && b != NULL;
+				a = a->next, b = b->next, parameterNumber++, A = (ID_Information*)a, B = (ID_Information*)b)
+			{	
 				if (!isAValueCanHoldBValue(A, B))
 				{
 					fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", id_name);
@@ -128,6 +130,7 @@ void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
 						A->ID_Type, B->ID_Type, parameterNumber, getCurrentToken()->lineNumber);
 				}
 			}
+			
 		}
 	}
 
@@ -138,8 +141,11 @@ bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
 	char* aType;
 	char* bType;
 	
-	aType = _strdup(find(A->name)->ID_Type);
-	bType = _strdup(find(B->name)->ID_Type);
+	ID_Information* testA = find(A->name);
+	ID_Information* testB = find(B->name);
+	
+	aType = _strdup(testA->ID_Type);
+	bType = _strdup(testB->ID_Type);
 
 	if (isFunction(A->name))
 	{
@@ -180,18 +186,18 @@ bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWith
 
 	if (strcmp(leftType, "error_type") == 0 || strcmp(rightType, "error_type") == 0)
 	{
-		fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", leftType, rightType, lineNumberWithAssighnment);
 		return false;
 	}
 
-	if ((strcmp(leftType, "integer") == 0 && strcmp(rightType, "integer") == 0)
+	if ((strcmp(leftType, "void") == 0 && strcmp(rightType, "void") == 0)
+		||
+		(strcmp(leftType, "integer") == 0 && strcmp(rightType, "integer") == 0)
 		||
 		(strcmp(leftType, "real") == 0 && strcmp(rightType, "integer") == 0)
 		||
 		(strcmp(leftType, "real") == 0 && strcmp(rightType, "real") == 0))
 		return true;
-
-	fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", leftType, rightType, lineNumberWithAssighnment);
+	
 	return false;
 
 }
