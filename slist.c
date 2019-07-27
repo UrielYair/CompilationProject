@@ -225,6 +225,21 @@ void* slistsConcat(slist* headList, slist* tailList) {
 	return newList;
 }
 
+// TODO: delete if not needed.
+void* getNElementInList(slist* list, int n)
+{
+	snode* node = list->head;
+	int i = 0;
+
+	while (node != NULL && i < n)
+	{
+		node = node->next;
+		i++;
+	}
+	
+	return node->data;	
+}
+
 //EXAMPLE PROGRAM:
 /*
 
