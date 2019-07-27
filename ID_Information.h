@@ -30,7 +30,7 @@ bool isFunction(char* id_name);
 void	checkFunctionArguments(char* id_name, slist* argumentsOfFunction);
 bool	isAValueCanHoldBValue(ID_Information* A, ID_Information* B);
 bool	checkBoundaries(int indexInArray, int sizeOfArray);
-bool	assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment);
+bool	assighnmentTypeChecking(char* leftType, char* rightType);
 char* arithmeticTypeChecking(char* operandA, char* operandB);
 bool			wereAllIDsUsed();
 

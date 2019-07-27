@@ -22,7 +22,7 @@ ID_Information* new_ID_Information(char* name) {
 		new_id->sizeOfArray = -1;
 		new_id->isArray = false;
 		new_id->returnedType = NULL;
-		new_id->numOfArguments = -1;
+		new_id->numOfArguments = 0;
 		new_id->listOfArguments = NULL;
 	}
 	return new_id;
@@ -46,8 +46,7 @@ void delete_ID_Information(ID_Information* idToDelete) {
 bool wereAllIDsUsed()
 {
 	bool everyIDWasInUse = true;
-	int counterOfIDsWhichNotUsed = 0;
-
+	
 	// Iterate through existing hash table.
 	for (int i = 0; i < currentTable->currentSymbolTable->size; i++)
 	{
@@ -61,16 +60,9 @@ bool wereAllIDsUsed()
 			{
 				everyIDWasInUse = false;
 				fprintf(semanticOutput, "Variable (%s) wasn't in use in the scope that end in line: %d.\n", currentID->name, getCurrentToken()->lineNumber);
-				counterOfIDsWhichNotUsed++;
 			}
 		}
 	}
-	
-	if (everyIDWasInUse) // TODO: think about removing this part.
-		fprintf(semanticOutput, "All the ID's were in used in the scope that end in line: %d.\n", getCurrentToken()->lineNumber);
-	else
-		fprintf(semanticOutput, "SUMMARY: %u ID's were not in use in the scope that end in line: %d.\n", counterOfIDsWhichNotUsed, getCurrentToken()->lineNumber);
-
 	return everyIDWasInUse;
 }
 
@@ -82,56 +74,69 @@ bool isFunction(char* id_name) {
 	return false;
 }
 
-void checkFunctionArguments(char* id_name, slist * argumentsOfFunction) {
+void checkFunctionArguments(char* functionName, slist* receivedParameters) {
+	// TODO: make function that get the nth element from the slist.
+	// after that, delete the whole for loop.
+	ID_Information* functionInformation = NULL;
+	slist* actualParameters = NULL;
+	snode *currentActualParameter, *currentReceivedParameter;
+	ID_Information* currentReceivedParameterFullInformation = NULL;
+	ID_Information* currentActualParameterIdInformation = NULL;
 	
-	ID_Information* idToCheck = find(id_name);
-	slist* argumentdsOfIdToCheck = NULL;
-	snode* a, * b;
-	int listASize, listBSize, parameterNumber = 1;
-	ID_Information* A = NULL, * B = NULL;
-	
+	functionInformation = find(functionName);
 
-	if (idToCheck != NULL)		// Check if id is exist.
+	if (functionInformation != NULL)		// Check if id of functionName is even exist.
 	{
-		// Check if the id is a function.
-		if (!isFunction(id_name))
+		if (!isFunction(functionName))		// Check if functionName is function.
 		{
-			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
+			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", functionName);
 			return;
 		}
-
-		argumentdsOfIdToCheck = idToCheck->listOfArguments;
 		
-		if (argumentdsOfIdToCheck != NULL && argumentsOfFunction != NULL)
+		actualParameters = functionInformation->listOfArguments;
+
+		//	In case the function declared without parameter
+		//	and also no parameters were sent.
+		if (actualParameters == NULL && receivedParameters == NULL)
+			return;
+		
+		if (receivedParameters != NULL && functionInformation->numOfArguments != receivedParameters->count)
 		{
-			// Checking if the amount of argument is equal to the 
-			listASize = slist_get_count(argumentdsOfIdToCheck);
-			listBSize = slist_get_count(argumentsOfFunction);
-
-			a = argumentdsOfIdToCheck->head->data;
-			b = argumentsOfFunction->head->data;
-			A = (ID_Information*)a;
-			B = (ID_Information*)b;
-
-			if (listASize != listBSize)
+			fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
+				functionName, getCurrentToken()->lineNumber);
+			return;
+		}
+		else
+		{
+			for (int i = 0; i < functionInformation->numOfArguments; i++)
 			{
-				fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", id_name);
-				fprintf(semanticOutput, "The amount of parameters in the function call doesn't match the function definition. - line: %d \n", getCurrentToken()->lineNumber);
-				return;
-			}
+				currentActualParameterIdInformation =
+					getNElementInList(actualParameters, i);
+				currentReceivedParameterFullInformation =
+					getNElementInList(receivedParameters, i);
 			
-			for (;a != NULL && b != NULL;
-				a = a->next, b = b->next, parameterNumber++, A = (ID_Information*)a, B = (ID_Information*)b)
-			{	
-				if (!isAValueCanHoldBValue(A, B))
+				if (!assighnmentTypeChecking(
+					currentActualParameterIdInformation->ID_Type,
+					currentReceivedParameterFullInformation->ID_Type))
 				{
-					fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", id_name);
+					fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", functionName);
 					fprintf(semanticOutput, "Types mismatch. %s can't hold %s. parameter number: %d. - line: %d.\n",
-						A->ID_Type, B->ID_Type, parameterNumber, getCurrentToken()->lineNumber);
+						currentActualParameterIdInformation->ID_Type,
+						currentReceivedParameterFullInformation->ID_Type,
+						i+1,
+						getCurrentToken()->lineNumber);
 				}
-			}
+				
+			} // end of for loop.
+
 			
 		}
+	}
+	else
+	{
+		fprintf(semanticOutput, "Can't check the arguments of (%s) because it not declared yet! - line: %d.\n",
+			functionName, getCurrentToken()->lineNumber);
+		return;
 	}
 
 }
@@ -179,7 +184,7 @@ bool checkBoundaries(int indexInArray, int sizeOfArray) {
 		return true;
 	return false;
 }
-bool assighnmentTypeChecking(char* leftType, char* rightType, int lineNumberWithAssighnment) {
+bool assighnmentTypeChecking(char* leftType, char* rightType) {
 
 	if (leftType == NULL || rightType == NULL)
 		return false;
