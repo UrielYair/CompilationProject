@@ -64,7 +64,6 @@ void set_id_info_pointer(ID_Information * id_entry, char* whatToUpdate, void* va
 
 	if (id_entry == NULL)
 	{
-		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -96,7 +95,6 @@ void set_id_info_boolean(ID_Information* id_entry, char* whatToUpdate, bool valu
 
 	if (id_entry == NULL)
 	{
-		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -115,7 +113,6 @@ void set_id_info_integer(ID_Information* id_entry, char* whatToUpdate, int value
 
 	if (id_entry == NULL)
 	{
-		fprintf(semanticOutput, "No id_entry to set.\n");
 		return;
 	}
 
@@ -146,10 +143,16 @@ bool isIDExistInSymbolTable(char* id_name) {
 }
 
 void checkIfIDAlreadyDeclared(char* id_name) {
+	ID_Information* id = NULL;
+
 	if (!isIDExistInSymbolTable(id_name))
 		fprintf(semanticOutput, "id (%s) must be declared before being used. - line %u.\n", id_name, getCurrentToken()->lineNumber);
 	else
-		set_id_info_boolean(find(id_name), "wasUsed", true);
+	{
+		id = find(id_name);
+		if (id!=NULL)
+			set_id_info_boolean(id, "wasUsed", true);
+	}
 }
 
 
