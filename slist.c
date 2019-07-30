@@ -238,11 +238,13 @@ void* getNElementInList(slist* list, int n)
 
 void printListWithNamesAndTypes(slist* listToPrint) 
 {
+	ID_Information* info;
+
 	if (listToPrint != NULL)
 	{
 		for (int i = 0; i < listToPrint->count; i++)
 		{
-			ID_Information* info = (ID_Information*)getNElementInList(listToPrint, i);
+			info = (ID_Information*)getNElementInList(listToPrint, i);
 			printf("[%s : %s]->", info->name, info->ID_Type);
 		}
 		printf("[NULL]\n");

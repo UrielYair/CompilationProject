@@ -7,9 +7,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// TODO: check initialization of variables before using them! HT, HT_ITEM, ID_Information, Parser
-// TODO: move all variables declarations to be in the begining of every function. the assighnments must comply C rules.
-
 void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
@@ -82,12 +79,13 @@ slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile, bool declaring)
 	// nullable - done
 	slist* listOfIDsToReturn = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
-	
+	Token* tokenToCheck = NULL;
+
 	switch (t->kind)
 	{
 	case TOKEN_SEMICOLON:
 	{
-		Token* tokenToCheck = peekN(t, 2); // looking to check what is the kind of the next token to decise how to act next.
+		tokenToCheck = peekN(t, 2); // looking to check what is the kind of the next token to decise how to act next.
 		if (tokenToCheck->kind == TOKEN_KW_INTEGER || tokenToCheck->kind == TOKEN_KW_REAL)
 		{
 			fprintf(outputFile, "Rule(VAR_DEFINITIONS_SUFFIX  -> ; VAR_DEFINITIONS)\n");
@@ -341,7 +339,7 @@ ID_Information* parse_VARIABLE				(FILE* outputFile, bool declaring)
 	}
 	return new_id;
 }
-int			parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
+int				parse_VARIABLE_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	//nullable - done
 	Token* t = peekN(getCurrentToken(), 1);
@@ -689,6 +687,7 @@ char*			parse_STATEMENT				(FILE* outputFile)
 {
 	Token* t = peekN(getCurrentToken(), 1);
 	char* returnType = NULL;
+	char* id_name;
 
 	switch (t->kind)
 	{
@@ -709,7 +708,7 @@ char*			parse_STATEMENT				(FILE* outputFile)
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(STATEMENT ->  id STATEMENT_SUFFIX)\n");
 		match(TOKEN_ID);
-		char* id_name = getIdLexeme();
+		id_name = getIdLexeme();
 		checkIfIDAlreadyDeclared(id_name);
 		parse_STATEMENT_SUFFIX(outputFile,id_name);
 		returnType= _strdup("void");
@@ -739,7 +738,8 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 	char* leftType = NULL;
 	char* rightType = NULL;
 	ID_Information* idToCheck = find(id_name);
-	
+	int indexInArray, lineNumberWithAssighnment;
+
 	switch (t->kind)
 	{
 	case TOKEN_OPEN_ROUND_BRACKETS:
@@ -755,7 +755,8 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		if (isFunction(id_name))
 		{
 			declaredParametersOfTheFunction = idToCheck->listOfArguments;
-			checkFunctionArguments(id_name, declaredParametersOfTheFunction, inputParametersForFunctionCall);
+			// TODO: fix if have enouth time.
+			// checkFunctionArguments(id_name, declaredParametersOfTheFunction, inputParametersForFunctionCall); 
 		}
 		else
 		{
@@ -769,7 +770,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> VARIABLE_SUFFIX = EXPRESSION)\n");
 		if (idToCheck != NULL)
 			leftType = idToCheck->ID_Type;
-		int indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
+		indexInArray = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		
 		if(idToCheck != NULL && idToCheck->isArray && indexInArray==INT_MAX ) // eliminate option of assignment into array
 			fprintf(semanticOutput, "id: (%s) is array, assighnment to array is forbidden. assighnment allowed only to array element. line %u.\n",
@@ -794,7 +795,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		}
 
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
-		int lineNumberWithAssighnment = getCurrentToken()->lineNumber;
+		lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
 		if (!assighnmentTypeChecking(leftType, rightType))
 			fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", 
@@ -928,8 +929,11 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 	Token* t = peekN(getCurrentToken(), 1);
 	Token* tokenToCheck;
 	char* returnType = NULL;
+	char* id_name;
+	char* expressionType;
 	ID_Information* ID_Info = NULL;
-
+	ID_Information* variableFromParse;
+	ID_Information* actual_id;
 	
 	switch (t->kind)
 	{
@@ -952,7 +956,7 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  id ar_op EXPRESSION)\n");
 			match(TOKEN_ID);
-			char* id_name = getIdLexeme();
+			id_name = getIdLexeme();
 			ID_Info = find(id_name);
 			
 			if (ID_Info != NULL && ID_Info->isArray)
@@ -961,7 +965,7 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 			
 			checkIfIDAlreadyDeclared(id_name);
 			next_token();	// skipping on token of kind: DIVISION/MULTIPLICATION - already checked in the if statement above.
-			char* expressionType = parse_EXPRESSION(outputFile);
+			expressionType = parse_EXPRESSION(outputFile);
 			
 			if (ID_Info != NULL)
 			{
@@ -981,11 +985,11 @@ char*			parse_EXPRESSION			(FILE* outputFile)
 		else
 		{
 			fprintf(outputFile, "Rule(EXPRESSION ->  VARIABLE)\n");
-			ID_Information* variableFromParse = parse_VARIABLE(outputFile, false);
+			variableFromParse = parse_VARIABLE(outputFile, false);
 
 			if (variableFromParse != NULL)
 			{
-				ID_Information* actual_id = find(variableFromParse->name);
+				actual_id = find(variableFromParse->name);
 				if (actual_id != NULL)
 					returnType = _strdup(actual_id->ID_Type);
 				else
