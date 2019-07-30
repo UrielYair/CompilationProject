@@ -88,13 +88,17 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 	{
 		fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
 			functionName, getCurrentToken()->lineNumber);
+		return;
 	}
 
 	else if (declaredParametersOfTheFunction != NULL && inputParametersForFunctionCall != NULL)
 	{
 		if (declaredParametersOfTheFunction->count != inputParametersForFunctionCall->count)
+		{
 			fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
 				functionName, getCurrentToken()->lineNumber);
+			return;
+		}
 
 		// TODO:  PRINTING
 		/*
@@ -118,10 +122,10 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 
 			currentinputParameter =
 				getNElementInList(inputParametersForFunctionCall, i);
-
+			
 			leftType = currentDeclaredParameter->ID_Type;
 			rightType = currentinputParameter->ID_Type;
-
+			
 			if (!assighnmentTypeChecking(
 				leftType,
 				rightType))
@@ -134,7 +138,7 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 					getCurrentToken()->lineNumber);
 			}
 		} // end of for loop.
-		*/
+		*/		
 
 
 	}
