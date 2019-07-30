@@ -755,8 +755,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		if (isFunction(id_name))
 		{
 			declaredParametersOfTheFunction = idToCheck->listOfArguments;
-			// TODO: fix if have enouth time.
-			// checkFunctionArguments(id_name, declaredParametersOfTheFunction, inputParametersForFunctionCall); 
+			checkFunctionArguments(id_name, declaredParametersOfTheFunction, inputParametersForFunctionCall); 
 		}
 		else
 		{

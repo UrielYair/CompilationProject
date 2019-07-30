@@ -109,7 +109,7 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 			printf("======================================================\n\n");
 			*/
 
-			
+			/*
 			for (int i = 0; i < declaredParametersOfTheFunction->count; i++)
 			{
 				currentDeclaredParameter =
@@ -133,7 +133,7 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 						getCurrentToken()->lineNumber);
 				}
 			} // end of for loop.
-			
+			*/
 		}
 		
 	}
