@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include "SymbolTable.h"
 #include "slist.h"
+#include <stdio.h>
 
-static snode* snode_create(void* data)
+snode* snode_create(void* data)
 {
 	snode* node = (snode*)malloc(sizeof(snode));
 	if (node) {
@@ -197,35 +198,30 @@ unsigned int slist_get_count(const slist* list)
 	return list->count;
 }
 
-void* slistsConcat(slist* headList, slist* tailList) {
-	if (headList == NULL && tailList == NULL)
+void* slistsConcat(slist* headList, slist* tailList) 
+{
+	int i;
+	ID_Information* elementToAdd = NULL;
+
+	if (headList->head == NULL && tailList->head == NULL)
 		return NULL;
 
-	if (headList == NULL)
+	if (headList->head == NULL)
 		return tailList;
 
-	if (tailList == NULL)
+	if (tailList->head == NULL)
 		return headList;
 
-	slist* newList = slist_create();
-	snode* node = headList->head;
-	while (node != NULL)
-	{
-		slist_add_tail(newList, node->data);
-		node = node->next;
-	}
+	if (tailList->head != NULL)
+		for (i = 0; i < (int)tailList->count; i++)
+		{
+			elementToAdd = getNElementInList(tailList, i);
+			slist_add_tail(headList, elementToAdd);
+		}
 
-	node = tailList->head;
-	while (node != NULL)
-	{
-		slist_add_tail(newList, node->data);
-		node = node->next;
-	}
-
-	return newList;
+	return headList;
 }
 
-// TODO: delete if not needed.
 void* getNElementInList(slist* list, int n)
 {
 	snode* node = list->head;
@@ -240,6 +236,19 @@ void* getNElementInList(slist* list, int n)
 	return node->data;	
 }
 
+void printListWithNamesAndTypes(slist* listToPrint) 
+{
+	if (listToPrint != NULL)
+	{
+		for (int i = 0; i < listToPrint->count; i++)
+		{
+			ID_Information* info = (ID_Information*)getNElementInList(listToPrint, i);
+			printf("[%s : %s]->", info->name, info->ID_Type);
+		}
+		printf("[NULL]\n");
+		printf("");
+	}
+}
 //EXAMPLE PROGRAM:
 /*
 

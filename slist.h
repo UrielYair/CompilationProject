@@ -15,7 +15,7 @@ typedef struct slist {
 
 typedef void (*slist_forfn)(void*);
 
-static snode* snode_create(void* data);
+snode* snode_create(void* data);
 slist* slist_create(void);
 void slist_empty(slist* list);
 void slist_delete(slist* list);
@@ -30,5 +30,6 @@ void slist_for_each(const slist* list, slist_forfn fun);
 unsigned int slist_get_count(const slist* list);
 void* slistsConcat(slist* headList, slist* tailList);
 void* getNElementInList(slist* list, int n);
+void printListWithNamesAndTypes(slist* listToPrint);
 
 #endif /* SLIST_H */
