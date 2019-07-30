@@ -128,13 +128,14 @@ slist*			parse_VAR_DEFINITION		(FILE* outputFile, bool declaring)
 {
 	slist* listOfIDs = NULL;
 	Token* t = peekN(getCurrentToken(), 1);
+	char* id_type = NULL;
 
 	switch (t->kind)
 	{
 	case TOKEN_KW_INTEGER:
 	case TOKEN_KW_REAL:
 		fprintf(outputFile, "Rule(VAR_DEFINITION ->  TYPE  VARIABLES_LIST)\n");
-		char* id_type = parse_TYPE(outputFile);
+		id_type = _strdup(parse_TYPE(outputFile));
 		listOfIDs = parse_VARIABLES_LIST(outputFile, id_type, declaring);
 		break;
 
