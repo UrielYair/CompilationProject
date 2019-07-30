@@ -699,7 +699,9 @@ char*			parse_STATEMENT				(FILE* outputFile)
 
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(STATEMENT ->  BLOCK)\n");
+		parse_BB();
 		returnType = parse_BLOCK(outputFile);
+		parse_FB();
 		break;
 
 	case TOKEN_KW_RETURN:
@@ -751,7 +753,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		fprintf(outputFile, "Rule(STATEMENT_SUFFIX -> (PARAMETERS_LIST))\n");
 		match(TOKEN_OPEN_ROUND_BRACKETS);
 		if (!isFunction(id_name))
-			fprintf(semanticOutput, "id: (%s) is not a function, calling to function which not declared is forbidden. line %u.\n",
+			fprintf(semanticOutput, "id (%s) is not a function, calling to function which not declared is forbidden. line %u.\n",
 				id_name, getCurrentToken()->lineNumber);
 		inputParametersForFunctionCall = parse_PARAMETERS_LIST(outputFile);
 
@@ -764,7 +766,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		}
 		else
 		{
-			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
+			fprintf(semanticOutput, "Can't check the arguments that send to %s because it's not a function!\n", id_name);
 		}
 			
 		break;
@@ -801,7 +803,7 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		match(TOKEN_ARITHMETIC_ASSIGNMENT);
 		lineNumberWithAssighnment = getCurrentToken()->lineNumber;
 		rightType = parse_EXPRESSION(outputFile);
-		if (!assighnmentTypeChecking(leftType, rightType))
+		if (!isFunction(id_name) && !assighnmentTypeChecking(leftType, rightType))
 			fprintf(semanticOutput, "Assighnment Types error: left side type [%s] right side type [%s]. - line number: %u.\n", 
 				leftType, rightType, lineNumberWithAssighnment);
 		
@@ -868,14 +870,12 @@ char*			parse_BLOCK					(FILE* outputFile)
 	case TOKEN_OPEN_CURLY_BRACKETS:
 		fprintf(outputFile, "Rule(BLOCK -> { VAR_DEFINITIONS; STATEMENTS })\n");
 		match(TOKEN_OPEN_CURLY_BRACKETS);
-		parse_BB();
 		parse_VAR_DEFINITIONS(outputFile, true);
 		match(TOKEN_SEMICOLON);
 		returnedTypeOfBlock = parse_STATEMENTS(outputFile);
 		if (returnedTypeOfBlock == NULL)
 			returnedTypeOfBlock=_strdup("void");
 		match(TOKEN_CLOSE_CURLY_BRACKETS);
-		parse_FB();
 		break;
 
 	default:
