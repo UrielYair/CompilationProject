@@ -22,11 +22,11 @@ void			parse_PROGRAM				(FILE* outputFile)
 		parse_VAR_DEFINITIONS(outputFile,true);
 		match(TOKEN_SEMICOLON);
 		parse_STATEMENTS(outputFile);
-		parse_FB(); // TODO: choose between line 25 or 40 {parse_FB()}
+		parse_FB(); 
 		match(TOKEN_KW_END);
-		parse_BB(); // TODO: choose between line 25 or 40 {parse_FB()}
+		parse_BB(); 
 		parse_FUNC_DEFINITIONS(outputFile);
-		parse_FB();// TODO: choose between line 25 or 40 {parse_FB()}
+		parse_FB();
 		break;
 
 	default:
@@ -53,8 +53,10 @@ slist*			parse_VAR_DEFINITIONS		(FILE* outputFile, bool declaring)
 	case TOKEN_KW_REAL:
 	case TOKEN_KW_INTEGER:
 		fprintf(outputFile, "Rule(VAR_DEFINITIONS -> VAR_DEFINITION VAR_DEFINITIONS_SUFFIX)\n");
-		headOfIdsList = parse_VAR_DEFINITION(outputFile,declaring);			// parse_VAR_DEFINITION() will return only one ID_Information.
-		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile, declaring);	// parse_VAR_DEFINITIONS_SUFFIX() will return list of ID's with their info.
+		headOfIdsList = parse_VAR_DEFINITION(outputFile,declaring);	
+		if (headOfIdsList == NULL)
+			headOfIdsList = slist_create();
+		tailOfIDsList = parse_VAR_DEFINITIONS_SUFFIX(outputFile, declaring);
 		if (tailOfIDsList != NULL)
 			headOfIdsList = slistsConcat(headOfIdsList, tailOfIDsList);
 		break;
@@ -72,6 +74,7 @@ slist*			parse_VAR_DEFINITIONS		(FILE* outputFile, bool declaring)
 		back_token();
 		break;
 	}
+
 	return headOfIdsList;
 }
 slist*			parse_VAR_DEFINITIONS_SUFFIX(FILE* outputFile, bool declaring)
@@ -194,11 +197,18 @@ slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type, bool declaring)
 	case TOKEN_ID:
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
-		if (declaring) // TODO: Check
+		
+		if(declaring)
 			set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
-		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
+
+		if (idInformationOfHeadNode != NULL)
+		{
+			slist_add_tail(headOfIDsList, idInformationOfHeadNode);
+		}
+		
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type, declaring);
-		if (tailOfIDsList != NULL)
+		
+		if (tailOfIDsList != NULL) 
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
@@ -232,11 +242,17 @@ slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type, bool decl
 		fprintf(outputFile, "Rule(VARIABLES_LIST_SUFFIX->  , VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		match(TOKEN_COMMA);
 		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
-		if (declaring) // TODO: Check
+		
+		if (declaring)
 			set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
-		slist_add_tail(headOfIDsList, idInformationOfHeadNode);
+
+		if (idInformationOfHeadNode != NULL)
+		{
+			slist_add_tail(headOfIDsList, idInformationOfHeadNode);
+		}
+
 		tailOfIDsList = parse_VARIABLES_LIST_SUFFIX(outputFile, id_type,declaring);
-		if (tailOfIDsList != NULL)
+		if (tailOfIDsList != NULL) 
 			headOfIDsList = slistsConcat(headOfIDsList, tailOfIDsList);
 		break;
 
@@ -278,9 +294,8 @@ ID_Information* parse_VARIABLE				(FILE* outputFile, bool declaring)
 		id_name = getIdLexeme();
 
 		if (declaring)	
-		{
-			insert(id_name);
-			new_id = find(id_name);			
+		{ 
+			new_id = insert(id_name);
 			if (new_id != NULL)
 				set_id_info_pointer(new_id, "functionOrVariable", "variable");
 		}
@@ -289,7 +304,7 @@ ID_Information* parse_VARIABLE				(FILE* outputFile, bool declaring)
 			new_id = find(id_name);
 			checkIfIDAlreadyDeclared(id_name);
 		}
-		
+
 		arraySize = parse_VARIABLE_SUFFIX(outputFile,id_name);
 		
 		if (arraySize <= 0)
@@ -439,6 +454,7 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 	char* id_name = NULL;
 	slist* argumentsOfFunction;
 	char* returnedTypeOfBlock;
+	ID_Information* id = NULL;
 
 	switch (t->kind)
 	{
@@ -448,23 +464,32 @@ void			parse_FUNC_DEFINITION		(FILE* outputFile)
 		fprintf(outputFile, "Rule(FUNC_DEFINITION -> RETURNED_TYPE id ( PARAM_DEFINITIONS ) BLOCK)\n");
 				
 		returnedTypeOfID = parse_RETURNED_TYPE(outputFile);
+
 		if (match(TOKEN_ID))
 		{
 			id_name = getCurrentToken()->lexeme;
-			insert(id_name);
-			set_id_info_pointer(find(id_name), "functionOrVariable", "function");	// set id to function type.
-			set_id_info_pointer(find(id_name), "returnedType", returnedTypeOfID);	// set returned type of the function.
+			id = insert(id_name);
+			if (id != NULL)
+			{
+				set_id_info_pointer(id, "functionOrVariable", "function");	// set id to function type.
+				set_id_info_pointer(id, "returnedType", returnedTypeOfID);	// set returned type of the function.
+			}
 		}
+
+
 		parse_BB(); // in order to get the id's that declared in the params inside the scope of the function. 
 					// After the function ends delete them from the symbol table.
 		match(TOKEN_OPEN_ROUND_BRACKETS);
-		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
-		if (argumentsOfFunction != NULL)
-		{
-			set_id_info_pointer(find(id_name), "listOfArguments", argumentsOfFunction);
-			set_id_info_integer(find(id_name), "numOfArguments", argumentsOfFunction->count);
-		}
 		
+		argumentsOfFunction = parse_PARAM_DEFINITIONS(outputFile);
+		
+		if (id != NULL && argumentsOfFunction != NULL)
+		{
+			set_id_info_pointer(id, "listOfArguments", argumentsOfFunction);
+			set_id_info_integer(id, "numOfArguments", argumentsOfFunction->count);
+		}
+
+
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		returnedTypeOfBlock = parse_BLOCK(outputFile);
 		
@@ -709,7 +734,8 @@ char*			parse_STATEMENT				(FILE* outputFile)
 void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 {
 	Token* t = peekN(getCurrentToken(), 1);
-	slist* functionParameters = NULL;
+	slist* inputParametersForFunctionCall = NULL;
+	slist* declaredParametersOfTheFunction = NULL;
 	char* leftType = NULL;
 	char* rightType = NULL;
 	ID_Information* idToCheck = find(id_name);
@@ -722,11 +748,20 @@ void			parse_STATEMENT_SUFFIX		(FILE* outputFile, char* id_name)
 		if (!isFunction(id_name))
 			fprintf(semanticOutput, "id: (%s) is not a function, calling to function which not declared is forbidden. line %u.\n",
 				id_name, getCurrentToken()->lineNumber);
-		functionParameters = parse_PARAMETERS_LIST(outputFile);
+		inputParametersForFunctionCall = parse_PARAMETERS_LIST(outputFile);
+
 		match(TOKEN_CLOSE_ROUND_BRACKETS);
 		
 		if (isFunction(id_name))
-			checkFunctionArguments(id_name, functionParameters);
+		{
+			declaredParametersOfTheFunction = idToCheck->listOfArguments;
+			checkFunctionArguments(id_name, declaredParametersOfTheFunction, inputParametersForFunctionCall);
+		}
+		else
+		{
+			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", id_name);
+		}
+			
 		break;
 
 	case TOKEN_OPEN_SQUARE_BRACKETS:
