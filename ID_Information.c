@@ -74,33 +74,19 @@ bool isFunction(char* id_name) {
 	return false;
 }
 
-void checkFunctionArguments(char* functionName, slist* receivedParameters) {
-	// TODO: make function that get the nth element from the slist.
-	// after that, delete the whole for loop.
-	ID_Information* functionInformation = NULL;
-	slist* actualParameters = NULL;
-	snode *currentActualParameter, *currentReceivedParameter;
-	ID_Information* currentReceivedParameterFullInformation = NULL;
-	ID_Information* currentActualParameterIdInformation = NULL;
-	
-	functionInformation = find(functionName);
+void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFunction, slist* inputParametersForFunctionCall) {
+	ID_Information* currentDeclaredParameter = NULL;
+	ID_Information* currentinputParameter = NULL;
+	char *leftType = NULL, *rightType = NULL;
 
-	if (functionInformation != NULL)		// Check if id of functionName is even exist.
+	//	In case the function declared without parameter and also no parameters were sent.
+	if (declaredParametersOfTheFunction == NULL && inputParametersForFunctionCall == NULL)
+		return;
+		
+	else if (declaredParametersOfTheFunction != NULL && inputParametersForFunctionCall != NULL)
 	{
-		if (!isFunction(functionName))		// Check if functionName is function.
-		{
-			fprintf(semanticOutput, "Can't check the arguments because %s is not a function!\n", functionName);
-			return;
-		}
-		
-		actualParameters = functionInformation->listOfArguments;
 
-		//	In case the function declared without parameter
-		//	and also no parameters were sent.
-		if (actualParameters == NULL && receivedParameters == NULL)
-			return;
-		
-		if (receivedParameters != NULL && functionInformation->numOfArguments != receivedParameters->count)
+		if (declaredParametersOfTheFunction->count != inputParametersForFunctionCall->count)
 		{
 			fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
 				functionName, getCurrentToken()->lineNumber);
@@ -108,37 +94,49 @@ void checkFunctionArguments(char* functionName, slist* receivedParameters) {
 		}
 		else
 		{
-			for (int i = 0; i < functionInformation->numOfArguments; i++)
-			{
-				currentActualParameterIdInformation =
-					getNElementInList(actualParameters, i);
-				currentReceivedParameterFullInformation =
-					getNElementInList(receivedParameters, i);
+
+			// TODO:  PRINTING
+			/*
+			printf("***************************\n");
+			printf("ID: %s \n", functionName);
+			printf("***************************\n");
+			printf("- Declared:\n");
+			printListWithNamesAndTypes(declaredParametersOfTheFunction);
+
+			printf("- Input to function call:\n");
+			printListWithNamesAndTypes(inputParametersForFunctionCall);
+			printf("===========================\n");
+			printf("======================================================\n\n");
+			*/
+
 			
+			for (int i = 0; i < declaredParametersOfTheFunction->count; i++)
+			{
+				currentDeclaredParameter =
+					getNElementInList(declaredParametersOfTheFunction, i);
+
+				currentinputParameter =
+					getNElementInList(inputParametersForFunctionCall, i);
+
+				leftType = currentDeclaredParameter->ID_Type;
+				rightType = currentinputParameter->ID_Type;
+
 				if (!assighnmentTypeChecking(
-					currentActualParameterIdInformation->ID_Type,
-					currentReceivedParameterFullInformation->ID_Type))
+					leftType,
+					rightType))
 				{
 					fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", functionName);
 					fprintf(semanticOutput, "Types mismatch. %s can't hold %s. parameter number: %d. - line: %d.\n",
-						currentActualParameterIdInformation->ID_Type,
-						currentReceivedParameterFullInformation->ID_Type,
-						i+1,
+						leftType,
+						rightType,
+						i + 1,
 						getCurrentToken()->lineNumber);
 				}
-				
 			} // end of for loop.
-
 			
 		}
+		
 	}
-	else
-	{
-		fprintf(semanticOutput, "Can't check the arguments of (%s) because it not declared yet! - line: %d.\n",
-			functionName, getCurrentToken()->lineNumber);
-		return;
-	}
-
 }
 
 bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
@@ -217,3 +215,4 @@ char* arithmeticTypeChecking(char* operandA, char* operandB) {
 		return "real";
 	return "error_type";
 }
+
