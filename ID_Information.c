@@ -82,61 +82,63 @@ void checkFunctionArguments(char* functionName, slist* declaredParametersOfTheFu
 	//	In case the function declared without parameter and also no parameters were sent.
 	if (declaredParametersOfTheFunction == NULL && inputParametersForFunctionCall == NULL)
 		return;
-		
+
+	else if ((declaredParametersOfTheFunction != NULL && inputParametersForFunctionCall == NULL) || 
+				(declaredParametersOfTheFunction == NULL && inputParametersForFunctionCall != NULL))
+	{
+		fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
+			functionName, getCurrentToken()->lineNumber);
+	}
+
 	else if (declaredParametersOfTheFunction != NULL && inputParametersForFunctionCall != NULL)
 	{
-
 		if (declaredParametersOfTheFunction->count != inputParametersForFunctionCall->count)
-		{
 			fprintf(semanticOutput, "Wrong amount of parameters in the function call (id: %s). - line: %d \n",
 				functionName, getCurrentToken()->lineNumber);
-			return;
-		}
-		else
+
+		// TODO:  PRINTING
+		/*
+		printf("***************************\n");
+		printf("ID: %s \n", functionName);
+		printf("***************************\n");
+		printf("- Declared:\n");
+		printListWithNamesAndTypes(declaredParametersOfTheFunction);
+
+		printf("- Input to function call:\n");
+		printListWithNamesAndTypes(inputParametersForFunctionCall);
+		printf("===========================\n");
+		printf("======================================================\n\n");
+		*/
+
+		/*
+		for (int i = 0; i < declaredParametersOfTheFunction->count; i++)
 		{
+			currentDeclaredParameter =
+				getNElementInList(declaredParametersOfTheFunction, i);
 
-			// TODO:  PRINTING
-			/*
-			printf("***************************\n");
-			printf("ID: %s \n", functionName);
-			printf("***************************\n");
-			printf("- Declared:\n");
-			printListWithNamesAndTypes(declaredParametersOfTheFunction);
+			currentinputParameter =
+				getNElementInList(inputParametersForFunctionCall, i);
 
-			printf("- Input to function call:\n");
-			printListWithNamesAndTypes(inputParametersForFunctionCall);
-			printf("===========================\n");
-			printf("======================================================\n\n");
-			*/
+			leftType = currentDeclaredParameter->ID_Type;
+			rightType = currentinputParameter->ID_Type;
 
-			/*
-			for (int i = 0; i < declaredParametersOfTheFunction->count; i++)
+			if (!assighnmentTypeChecking(
+				leftType,
+				rightType))
 			{
-				currentDeclaredParameter =
-					getNElementInList(declaredParametersOfTheFunction, i);
-
-				currentinputParameter =
-					getNElementInList(inputParametersForFunctionCall, i);
-
-				leftType = currentDeclaredParameter->ID_Type;
-				rightType = currentinputParameter->ID_Type;
-
-				if (!assighnmentTypeChecking(
+				fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", functionName);
+				fprintf(semanticOutput, "Types mismatch. %s can't hold %s. parameter number: %d. - line: %d.\n",
 					leftType,
-					rightType))
-				{
-					fprintf(semanticOutput, "Type check in parameters of function call has failed (id: %s).\n", functionName);
-					fprintf(semanticOutput, "Types mismatch. %s can't hold %s. parameter number: %d. - line: %d.\n",
-						leftType,
-						rightType,
-						i + 1,
-						getCurrentToken()->lineNumber);
-				}
-			} // end of for loop.
-			*/
-		}
-		
+					rightType,
+					i + 1,
+					getCurrentToken()->lineNumber);
+			}
+		} // end of for loop.
+		*/
+
+
 	}
+
 }
 
 bool isAValueCanHoldBValue(ID_Information * A, ID_Information * B) {
