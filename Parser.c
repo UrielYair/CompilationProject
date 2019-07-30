@@ -10,6 +10,8 @@
 void			parse_PROGRAM				(FILE* outputFile)
 {
 	Token* t = next_token();
+	char* returnedTypeOfMain = NULL;
+
 	parse_BB();
 
 	switch (t->kind)
@@ -18,7 +20,10 @@ void			parse_PROGRAM				(FILE* outputFile)
 		fprintf(outputFile, "Rule(PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS)\n");
 		parse_VAR_DEFINITIONS(outputFile,true);
 		match(TOKEN_SEMICOLON);
-		parse_STATEMENTS(outputFile);
+		returnedTypeOfMain = parse_STATEMENTS(outputFile);
+		if (strcmp(returnedTypeOfMain,"void") != 0)
+			fprintf(semanticOutput, "Main program is not allowed to return values. - line: %d.\n",
+				getCurrentToken()->lineNumber);
 		parse_FB(); 
 		match(TOKEN_KW_END);
 		parse_BB(); 
@@ -196,7 +201,7 @@ slist*			parse_VARIABLES_LIST		(FILE* outputFile, char* id_type, bool declaring)
 		fprintf(outputFile, "Rule(VARIABLES_LIST ->  VARIABLE   VARIABLES_LIST_SUFFIX)\n");
 		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
 		
-		if(declaring)
+		if(declaring && idInformationOfHeadNode != NULL)
 			set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
 
 		if (idInformationOfHeadNode != NULL)
@@ -241,7 +246,7 @@ slist*			parse_VARIABLES_LIST_SUFFIX	(FILE* outputFile, char* id_type, bool decl
 		match(TOKEN_COMMA);
 		idInformationOfHeadNode = parse_VARIABLE(outputFile, declaring);
 		
-		if (declaring)
+		if (declaring && idInformationOfHeadNode != NULL)
 			set_id_info_pointer(idInformationOfHeadNode, "ID_Type", id_type);
 
 		if (idInformationOfHeadNode != NULL)
