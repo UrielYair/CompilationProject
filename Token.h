@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-extern FILE *yyin, *yyout;
 
 typedef enum eTOKENS
 {
@@ -71,6 +70,9 @@ typedef struct Node
 	struct Node *next;
 } Node;
 
+extern FILE* yyin, * yyout;
+extern Node* currentNode;
+
 void create_and_store_token(eTOKENS kind, char* lexeme, int numOfLine);
 Token *next_token();
 Token *back_token();
@@ -82,5 +84,6 @@ Token* peekN(Token* current, int numberOfNexts);
 Token* getCurrentToken();
 void freeMemory();
 Node* getFirstNode();
+char* getIdLexeme();
 
 #endif

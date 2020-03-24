@@ -4,40 +4,16 @@
 #include <stdbool.h>
 #include <math.h>
 #include "xmalloc.h"
-#include "HashTable.h"
+#include "ht_hash_table.h"
 #include "SymbolTable.h"
 #include "prime.h"
+#include "ht_item.h"
 
 
-
-// HT_DELETED_ITEM is used to mark a bucket containing a deleted item
-static ht_item HT_DELETED_ITEM = { NULL, NULL };
 
 // HT_PRIMEs are parameters in the hashing algorithm
 static const int HT_PRIME_1 = 151;
 static const int HT_PRIME_2 = 163;
-
-
-/*
- * Initialises a new item containing k: v
- */
-static ht_item* ht_new_item(const char* k, const ID_Information* v) {
-	ht_item* i = xmalloc(sizeof(ht_item));
-	i->key = strdup(k);
-	i->value = v;
-	return i;
-}
-
-
-/*
- * Deletes the ht_item i
- */
-static void ht_del_item(ht_item* i) {
-	// TODO: maybe edit will be needed.
-	free(i->key);
-	free(i->value);
-	free(i);
-}
 
 
 /*
@@ -143,7 +119,7 @@ static int ht_hash(const char* s, const int num_buckets, const int attempt) {
 /*
  * Inserts the 'key': 'value' pair into the hash table
  */
-void ht_insert(ht_hash_table * ht, const char* key, const ID_Information* value) {
+void ht_insert(ht_hash_table * ht, char* key, ID_Information* value) {
 	// Resize if load > 0.7
 	const int load = ht->count * 100 / ht->size;
 	if (load > 70) {
@@ -215,7 +191,3 @@ void ht_delete(ht_hash_table * ht, const char* key) {
 	}
 	ht->count--;
 }
-
-
-
-

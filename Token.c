@@ -288,3 +288,7 @@ Node* getFirstNode()
 		currentNode = currentNode->prev;
 	return currentNode;
 }
+
+char* getIdLexeme() {
+	return getCurrentToken()->lexeme;
+}

@@ -3,11 +3,13 @@
 
 #include "Token.h"
 
+extern FILE *semanticOutput;
+
 extern int yylex();
 int yywrap();
 void printValidTokenToOutputFile(FILE* outputFile, eTOKENS kind, char* lexeme, int numOfLine);
 void printInvalidTokenToConsole(char* lexeme, int numOfLine);
-int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName);
+int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName, char* semanticOutputFileName);
 
 
 #endif

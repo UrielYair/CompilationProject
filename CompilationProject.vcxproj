@@ -126,18 +126,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ht_item.h" />
+    <ClInclude Include="ID_Information.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="prime.h" />
-    <ClInclude Include="HashTable.h" />
+    <ClInclude Include="ht_hash_table.h" />
+    <ClInclude Include="slist.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="xmalloc.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ht_item.c" />
+    <ClCompile Include="ID_Information.c" />
     <ClCompile Include="Parser.c" />
     <ClCompile Include="prime.c" />
-    <ClCompile Include="HashTable.c" />
+    <ClCompile Include="ht_hash_table.c" />
+    <ClCompile Include="slist.c" />
     <ClCompile Include="SymbolTable.c" />
     <ClCompile Include="Token.c" />
     <ClCompile Include="Utils.c" />

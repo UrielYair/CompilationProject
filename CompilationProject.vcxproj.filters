@@ -30,10 +30,19 @@
     <ClInclude Include="xmalloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HashTable.h">
+    <ClInclude Include="SymbolTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SymbolTable.h">
+    <ClInclude Include="slist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ID_Information.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ht_item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ht_hash_table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,10 +65,19 @@
     <ClCompile Include="xmalloc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HashTable.c">
+    <ClCompile Include="SymbolTable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SymbolTable.c">
+    <ClCompile Include="slist.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ID_Information.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ht_item.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ht_hash_table.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

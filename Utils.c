@@ -2,6 +2,7 @@
 #include "Parser.h"
 #include <string.h>
 
+FILE* semanticOutput = NULL;
 
 int yywrap() { return 1; }
 
@@ -16,7 +17,7 @@ void printInvalidTokenToConsole(char* lexeme, int numOfLine)
 	next_token();
 }
 
-int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName)
+int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntacticOutputFileName, char* semanticOutputFileName)
 {
 	int lineNumber = 1;
 
@@ -57,6 +58,20 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 		return 1;
 	}
 
+	// Openin files for semantic output:
+	semanticOutput = fopen(semanticOutputFileName, "w");
+
+	if (semanticOutput == NULL) {
+		printf("Error! creating output file for semantic analyzing failed.\nPress any key to continue\n");
+		printf("***********************************************************************************************\n");
+		printf("Press any key to continue\n");
+		getchar();
+		fclose(yyin);
+		fclose(yyout);
+		fclose(syntacticOutput);
+		return 1;
+	}
+
 	// Parsing input file:
 	parse_PROGRAM(syntacticOutput);
 	match(TOKEN_END_OF_FILE);
@@ -68,6 +83,7 @@ int parseInputFile(char* inputFile, char* lexicalOutputFileName, char* syntactic
 	fclose(yyin);
 	fclose(yyout);
 	fclose(syntacticOutput);
+	fclose(semanticOutput);
 
 	printf("***********************************************************************************************\n");
 	printf("Press any key to continue\n");
